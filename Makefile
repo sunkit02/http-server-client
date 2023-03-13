@@ -18,10 +18,11 @@ test: build-lib create_test_dir $(TEST_BUILD_DIR)/$(TEST_NAME)
 	@printf "\n\n"
 	@echo All tests passed!
 
+
 $(TEST_BUILD_DIR)/$(TEST_NAME): $(TEST_DIR)/$(TEST_NAME).c  $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o
 	@echo Compiling tests...
 	@$(CC) $^ -o $@
-	@echo Compiled tests successful!
+	@echo Compiled tests successfully!
 
 create_test_dir:
 	@mkdir -p $(TEST_DIR)
