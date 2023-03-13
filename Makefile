@@ -1,0 +1,73 @@
+CC=gcc # C compiler
+
+BUILD_DIR=build
+BUILD_TARGET=simple_server # Name of build executable
+
+TEST_NAME=servertest # Name of test executable
+TEST_DIR=test
+TEST_BUILD_DIR=test/build
+
+.PHONY: all
+all: build test run
+
+.PHONY: test
+test: build-lib create_test_dir $(TEST_BUILD_DIR)/$(TEST_NAME)
+	@echo Running tests...
+	@printf "\n\n"
+	@$(TEST_BUILD_DIR)/$(TEST_NAME)
+	@printf "\n\n"
+	@echo All tests passed!
+
+$(TEST_BUILD_DIR)/$(TEST_NAME): $(TEST_DIR)/$(TEST_NAME).c  $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o
+	@echo Compiling tests...
+	@$(CC) $^ -o $@
+	@echo Compiled tests successful!
+
+create_test_dir:
+	@mkdir -p $(TEST_DIR)
+	@mkdir -p $(TEST_BUILD_DIR)
+
+
+.PHONY: run
+run: build
+	@$(BUILD_DIR)/$(BUILD_TARGET)
+
+
+.PHONY: build
+build: build-lib build-server
+
+
+.PHONY: build-server
+build-server: main.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o
+	@echo Compiling and linking main.c...
+	@$(CC) $^ -o $(BUILD_DIR)/$(BUILD_TARGET)
+	@echo Built server successfully!
+
+
+.PHONY: build-lib
+build-lib: create_build_dir $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o
+	@echo Library built successfully!
+
+$(BUILD_DIR)/server.o: server.c 
+	@echo Compiling $@...
+	@$(CC) -c $< -o $@ 
+
+$(BUILD_DIR)/parsers.o: parsers.c 
+	@echo Compiling $@...
+	@$(CC) -c $< -o $@ 
+
+$(BUILD_DIR)/endpointlist.o: datastructures/endpointlist.c 
+	@echo Compiling $@...
+	@$(CC) -c $< -o $@ 
+
+
+create_build_dir: 
+	@mkdir -p $(BUILD_DIR)
+
+
+.PHONY: clean
+clean:
+	@rm -rf $(BUILD_DIR) $(TEST_BUILD_DIR)
+
+
+	
