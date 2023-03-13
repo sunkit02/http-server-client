@@ -1,8 +1,8 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "server.h"
-#include "urlparser.h"
+#include "../server.h"
+#include "../parsers.c"
 
 void printRequest(HttpRequest *request) {
     char *methodStr;
