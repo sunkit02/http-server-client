@@ -3,8 +3,8 @@
 #include <unistd.h>
 #include <signal.h>
 
-#include "../server.h"
-#include "../parsers.h"
+#include "/home/sunkit/src/c/simple_web_server/server.h"
+#include "/home/sunkit/src/c/simple_web_server/parsers.h"
 
 
 #define LISTENING_PORT 9001
