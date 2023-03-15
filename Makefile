@@ -11,20 +11,26 @@ TEST_BUILD_DIR=test/build
 all: build test run
 
 .PHONY: test
-test: build-lib create_test_dir $(TEST_BUILD_DIR)/$(TEST_NAME)
+test: build-lib create_test_dir $(TEST_NAME)
 	@echo Running tests...
 	@printf "\n\n"
-	@$(TEST_BUILD_DIR)/$(TEST_NAME)
+	@./$(TEST_NAME)
 	@printf "\n\n"
 	@echo All tests passed!
 
-
-$(TEST_BUILD_DIR)/$(TEST_NAME): $(TEST_DIR)/$(TEST_NAME).c  $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o
+# TODO: Figure out why servertest.c cannot be replaced with $(TEST_NAME)
+$(TEST_NAME): servertest.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o
 	@echo Compiling tests...
 	@$(CC) $^ -o $@
 	@echo Compiled tests successfully!
 
+# $(TEST_NAME): $(TEST_NAME).c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o
+# 	@echo Compiling tests...
+# 	@$(CC) $^ -o $@
+# 	@echo Compiled tests successfully!
+
 create_test_dir:
+	@echo Creating test directories...
 	@mkdir -p $(TEST_DIR)
 	@mkdir -p $(TEST_BUILD_DIR)
 
@@ -68,7 +74,7 @@ create_build_dir:
 
 .PHONY: clean
 clean:
-	@rm -rf $(BUILD_DIR) $(TEST_BUILD_DIR)
+	@rm -rf $(BUILD_DIR) $(TEST_BUILD_DIR) $(TEST_NAME)
 
 
 	
