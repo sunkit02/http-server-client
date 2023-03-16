@@ -8,34 +8,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-typedef enum {
-    GET, POST, PUT, DELETE, INVALID
-} HttpMethods;
-
-
-typedef struct {
-    char *key;
-    char *value;
-} HttpHeader;
-
-
-typedef struct {
-    // char *method;
-    HttpMethods method;
-    char *url;
-    char *body;
-    HttpHeader *headers;
-    size_t numOfHeaders;
-} HttpRequest;
-
-
-typedef struct {
-    char *url;
-    bool canGet;
-    bool canPost;
-    bool canPut;
-    bool canDelete;
-} HttpEndPoint;
+#include "../utils/http.h"
 
 
 typedef struct {
@@ -60,25 +33,6 @@ typedef struct server {
 
 
 /*############### Function Declarations ##############*/
-
-// Common string operations
-inline bool startsWith(char *start, char *str) {
-    return strncmp(start, str, strlen(start)) == 0;
-}
-
-
-inline bool endsWith(char *end, char *str) {
-    return strncmp(end, str + (strlen(str) - strlen(end)), strlen(end)) == 0;
-}
-
-
-inline bool contains(char *substr, char *str) {
-    size_t n = strlen(str) - strlen(substr);
-    for (size_t i = 0; i < n; i++) {
-        if (startsWith(substr, str + i)) return true;
-    }
-    return false;
-}
 
 // Construct endpointlist
 EndpointList constructEndpointList(size_t size);

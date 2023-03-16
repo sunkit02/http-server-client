@@ -12,7 +12,7 @@ all: build test run
 
 .PHONY: test
 test: build-lib create_test_dir $(TEST_BUILD_DIR)/$(TEST_NAME)
-	@echo Running tests...
+	@echo Running server tests...
 	@printf "\n\n"
 	@$(TEST_BUILD_DIR)/$(TEST_NAME)
 	@printf "\n\n"
@@ -46,7 +46,7 @@ build: build-lib build-server
 
 .PHONY: build-server
 build-server: main.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o
-	@echo Compiling and linking main.c...
+	@echo Compiling and linking server executable...
 	@$(CC) $^ -o $(BUILD_DIR)/$(BUILD_TARGET)
 	@echo Built server successfully!
 
