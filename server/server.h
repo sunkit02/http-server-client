@@ -29,7 +29,7 @@ typedef struct server {
     struct sockaddr_in address;
     int socket;
     EndpointList *endpointList;
-    void (*launch)(struct server *);
+    void (*launch)(struct server *server);
 } Server;
 
 
