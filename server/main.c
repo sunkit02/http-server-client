@@ -1,5 +1,5 @@
 #include "server.h"
-#include "parsers.h"
+#include "../utils/parsers.h"
 #include <sys/socket.h>
 
 void handleGetHome(int clientSocket) {

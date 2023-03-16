@@ -4,7 +4,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
-#include "server.h"
+#include "../server/server.h"
 
 int strfchar(char *str, char c);
 const char *findBodyStart(const char *const rawRequest);

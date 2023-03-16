@@ -2,7 +2,7 @@
 #include <stdlib.h>
 
 #include "../server.h"
-#include "../parsers.c"
+#include "../../utils/parsers.h"
 
 void printRequest(HttpRequest *request) {
     char *methodStr;
