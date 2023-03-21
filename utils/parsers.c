@@ -61,26 +61,27 @@ HttpMethods parseMethodStr(char *methodStr) {
     return method;
 }
 
-HttpRequest parseRequest(const char *const rawRequest) {
+
+HttpRequest *parseHttpRequest(const char *const rawRequest) {
     // Copy request string to another memory address to keep original unmodified
     char *buffer = malloc(strlen(rawRequest));
     memcpy(buffer, rawRequest, strlen(rawRequest));
 
-    HttpRequest request;
-    request.numOfHeaders = 0;
+    HttpRequest *request = malloc(sizeof(HttpRequest));
+    request->numOfHeaders = 0;
 
     // Get pointer to HTTP Method and copy to another memory location
     // while leaving original string unmodified to prevent memory leaks
     char *method = strtok(buffer, " ");
     // char *tempMethod = malloc(strlen(method));
     // memcpy(tempMethod, method, strlen(method));
-    request.method = parseMethodStr(method);
+    request->method = parseMethodStr(method);
 
     // Do the same thing for the url
     char *url = strtok(NULL, " ");
     char *tempUrl = malloc(strlen(url));
     memcpy(tempUrl, url, strlen(url));
-    request.url = tempUrl;
+    request->url = tempUrl;
 
     // TODO: implement parsing for headers
 
@@ -89,13 +90,29 @@ HttpRequest parseRequest(const char *const rawRequest) {
 
     // check if there is a request body
     if (body == NULL) {
-        request.body = NULL;
+        request->body = NULL;
     } else {
         // copy request body to another memory loation if exists
         char *tempBody = malloc(strlen(body));
         memcpy(tempBody, body, strlen(body));
-        request.body = tempBody;
+        request->body = tempBody;
     }
 
     return request;
+}
+
+
+HttpResponse *parseHttpResponse(const char *const rawResponse) {
+    HttpResponse *response = malloc(sizeof(HttpResponse));
+    
+    response->status = 200;
+    response->headers = NULL;
+    response->body = "Hello, world!";
+
+    return response;
+}
+
+char *stringifyHttpRequest(HttpRequest *request) {
+    return "GET / HTTP/1.1\r\n\r\n";
+
 }

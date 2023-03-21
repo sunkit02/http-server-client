@@ -28,7 +28,24 @@ inline bool contains(char *substr, char *str) {
 
 
 int strfchar(char *str, char c);
+
+// Returns a pointer to the first character of the body of
+// an HTTP request or response
 const char *findBodyStart(const char *const rawRequest);
-HttpRequest parseRequest(const char *const rawRequest);
+
+
+// Takes in the raw HTTP request string and returns a pointer a an
+// HttpRequest struct containing the content of the raw request
+HttpRequest *parseHttpRequest(const char *const rawRequest);
+
+
+// Takes in an HttpRequest struct and returns a stringified
+// representation of that HttpRequest
+char *stringifyHttpRequest(HttpRequest *request);
+
+
+// Takes in the raw HTTP response string and returns a pointer a an
+// HttpResponse struct containing the content of the raw response
+HttpResponse *parseHttpResponse(const char *const rawResponse);
 
 #endif // !DEBUG

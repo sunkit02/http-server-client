@@ -45,12 +45,12 @@ void launchServer(Server *server) {
 
 		// parse request (printf for now )
 		printf("Request received:\n %s\n", requestBuffer);
-		HttpRequest request = parseRequest(requestBuffer);
-		printf("Request(method=%d, url=%s, body=%s)\n", request.method, request.url, request.body);
+		HttpRequest *request = parseHttpRequest(requestBuffer);
+		printf("Request(method=%d, url=%s, body=%s)\n", request->method, request->url, request->body);
 
 		// invoke callback for request
 		// handleGetHome(clientSocket);
-		handleRequest(&request, clientSocket); 
+		handleRequest(request, clientSocket); 
 
 		// close clientSocket
 		shutdown(clientSocket, SHUT_RDWR);
@@ -62,8 +62,6 @@ int main(void) {
 	EndpointList endpointList = constructEndpointList(10);
 	registerEndpoint(&endpointList, "/", GET);
 
-	Server server = constructServer(AF_INET, SOCK_STREAM,
-								 0, INADDR_ANY, 9001, 10,
-								 &endpointList,launchServer);
+	Server server = constructServer(AF_INET, SOCK_STREAM, 0, INADDR_ANY, 9001, 10, &endpointList,launchServer);
 	server.launch(&server);
 }

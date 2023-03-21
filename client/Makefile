@@ -11,26 +11,40 @@ TEST_BUILD_DIR=test/build
 .PHONY: all
 all: build test run
 
+
+.PHONY: run
+run: build
+	@$(BUILD_DIR)/$(BUILD_TARGET)
+
+
 .PHONY: build
-build: main.c build-client
-	@echo Compiling and linking client executable...
-	@$(CC) $< -o $(BUILD_DIR)/$(BUILD_TARGET)
+build: build-lib build-client
+
 
 .PHONY: build-client
-build-client: create_build_dir
-	@echo Building client...
+build-client: main.c $(BUILD_DIR)/client.o $(BUILD_DIR)/parsers.o
+	@echo Compiling and linking client executable...
+	@$(CC) $^ -o $(BUILD_DIR)/$(BUILD_TARGET)
+	@echo Built server successfully!
+
 
 .PHONY: build-lib
-build-lib:
+build-lib: create_build_dir $(BUILD_DIR)/client.o $(BUILD_DIR)/parsers.o
 	@echo Library built successfully!
 	 
+$(BUILD_DIR)/client.o: client.c
+	@echo Compiling $@...
+	@$(CC) -c $< -o $@ 
+
+$(BUILD_DIR)/parsers.o: ../utils/parsers.c
+	@echo Compiling $@...
+	@$(CC) -c $< -o $@ 
+
 create_build_dir:
 	@mkdir -p $(BUILD_DIR)
+
 
 .PHONY: test
 test:
 	@echo Running client tests...
 
-.PHONY: run
-run:
-	@$(BUILD_DIR)/$(BUILD_TARGET)
