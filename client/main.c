@@ -27,17 +27,17 @@ int main(void) {
 
     HttpRequest request;
     request.url = "/";
-    request.headers = NULL;
+    request.headerList = NULL;
     request.method = GET;
     request.body = NULL;
     request.numOfHeaders = 0;
 
     HttpResponse *response = client->sendRequest(client, &request);
     printf("HttpResponse(status=%d, headers=%s, body=%s)\n",
-                response->status, (char *)NULL, response->body);
+                response->statusCode, (char *)NULL, response->body);
 
     request.url = "/data";
     response = client->sendRequest(client, &request);
     printf("HttpResponse(status=%d, headers=%s, body=%s)\n",
-                response->status, (char *)NULL, response->body);
+                response->statusCode, (char *)NULL, response->body);
 }
