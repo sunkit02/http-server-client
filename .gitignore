@@ -1,3 +1,4 @@
 # Build files
-build/
-test/build/
+*/build/
+*/test/build/
+
