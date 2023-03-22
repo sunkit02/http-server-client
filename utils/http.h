@@ -23,18 +23,17 @@ typedef struct {
 
 
 typedef struct {
-    // char *method;
     HttpMethods method;
     char *url;
     char *body;
-    HttpHeader *headers;
+    HttpHeaderList *headerList;
     size_t numOfHeaders;
 } HttpRequest;
 
 
 typedef struct {
     int status;
-    HttpHeader *headers;
+    HttpHeaderList *headerList;
     char *body;
 } HttpResponse;
 
