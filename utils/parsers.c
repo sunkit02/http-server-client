@@ -83,7 +83,9 @@ HttpRequest *parseHttpRequest(const char *const rawRequest) {
     memcpy(tempUrl, url, strlen(url));
     request->url = tempUrl;
 
-    // TODO: implement parsing for headers
+    //////////////////////////////////////////
+    // TODO: implement parsing for headers ///
+    //////////////////////////////////////////
 
     // Get pointer to body 
     const char *body = findBodyStart(rawRequest);
@@ -104,10 +106,78 @@ HttpRequest *parseHttpRequest(const char *const rawRequest) {
 
 HttpResponse *parseHttpResponse(const char *const rawResponse) {
     HttpResponse *response = malloc(sizeof(HttpResponse));
+    // Pointers and buffers needed while parsing
+    char *responseSavePtr;
+    char *linePtr;
+    char *tempPtr;
+    char lineBuffer[2048];
+
+    // Copy rawResponse into a buffer to avoid mutating original string
+    char responseCopy[strlen(rawResponse) + 1];
+    strcpy(responseCopy, rawResponse);
+
+    // Get the starting point of the body as reference
+    // for the stopping point when parsing the headers
+    const char *bodyPtr = findBodyStart(responseCopy);
+
+
+    // Parse the first line
+    linePtr = strtok_r(responseCopy, "\r\n", &responseSavePtr);
+    // Copy the line for further parsing
+    strcpy(lineBuffer, linePtr);
+
+    // Ignore HTTP version
+    strtok(lineBuffer, " ");
+    // Parse status code 
+    tempPtr = strtok(NULL, " "); 
+    response->statusCode = atoi(tempPtr);
+    if (response->statusCode == 0) {
+        printf("Invalid status code: %s\n", tempPtr);
+        return NULL;
+    }
+    // Parse status
+    tempPtr = strtok(NULL, " "); 
+    response->status= malloc(strlen(tempPtr) + 1);
+    if (response->status == NULL) return NULL;
+    strcpy(response->status, tempPtr);
+
+
+    // Parse headers
     
-    response->statusCode = 200;
-    response->headerList = NULL;
-    response->body = "Hello, world!";
+    // Allocate memory for headerlist
+    HttpHeaderList *headerList = constructHttpHeaderList(5);
+    // Ensure that a valid list has been allocated
+    if (headerList == NULL) return NULL;
+
+    // Continue to parse as headers until reaches 
+    // the first character of the response body
+    while ((linePtr = strtok_r(NULL, "\r\n", &responseSavePtr)) < bodyPtr) {
+        // Copy current line for further parsing
+        strcpy(lineBuffer, linePtr);
+        
+        // Parse key of header
+        tempPtr = strtok(lineBuffer, " : ");
+        char tempKey[strlen(tempPtr) + 1];
+        strcpy(tempKey, tempPtr);
+        // Parse value of header
+        tempPtr = strtok(NULL, " : ");
+        char tempValue[strlen(tempPtr) + 1];
+        strcpy(tempValue, tempPtr);
+
+        // Add header to headerList
+        if (!httpHeaderListAdd(headerList, tempKey, tempValue)) {
+            return NULL;
+        }
+    }
+    // Assign headerlist to response
+    response->headerList = headerList;
+
+
+    // Parse body
+    // response->body = "<h1>This is the body!</h1>";
+    response->body = malloc(strlen(bodyPtr) + 1);
+    if (response->body == NULL) return NULL;
+    strcpy(response->body, bodyPtr);
 
     return response;
 }
