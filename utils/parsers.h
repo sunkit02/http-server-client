@@ -44,7 +44,7 @@ HttpRequest *parseHttpRequest(const char *const rawRequest);
 char *stringifyHttpRequest(HttpRequest *request);
 
 
-// Takes in the raw HTTP response string and returns a pointer a an
+// Takes in the raw HTTP response string and returns a pointer to an
 // HttpResponse struct containing the content of the raw response.
 // Returns the pointer to an HttpResponse struct if parsed successfully.
 // Returns a NULL pointer if failed to parse the response.

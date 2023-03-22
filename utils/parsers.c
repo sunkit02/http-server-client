@@ -105,12 +105,13 @@ HttpRequest *parseHttpRequest(const char *const rawRequest) {
 HttpResponse *parseHttpResponse(const char *const rawResponse) {
     HttpResponse *response = malloc(sizeof(HttpResponse));
     
-    response->status = 200;
-    response->headers = NULL;
+    response->statusCode = 200;
+    response->headerList = NULL;
     response->body = "Hello, world!";
 
     return response;
 }
+
 
 char *stringifyHttpRequest(HttpRequest *request) {
     return "GET / HTTP/1.1\r\n\r\n";
