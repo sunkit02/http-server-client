@@ -17,9 +17,9 @@ bool canParseHttpResponse();
 int main(void) {
 
     if (canParseHttpResponse()) {
-        puts("Test canParseHttpResponse() passed!");
+        puts(ANSI_COLOR_GREEN "Test canParseHttpResponse() passed!" ANSI_COLOR_RESET);
     } else {
-        puts("Test canParseHttpResponse() failed.");
+        puts(ANSI_COLOR_RED "Test canParseHttpResponse() failed." ANSI_COLOR_RESET);
     }
 
 }
@@ -34,11 +34,16 @@ bool canParseHttpResponse() {
         "<h1>This is the body!</h1>\r\n";
 
     HttpResponse *response = parseHttpResponse(rawResponse);
+    if (response == NULL) {
+        puts(ANSI_COLOR_RED "Failed to parse http response." ANSI_COLOR_RESET);
+        return false;
+    };
 
     int expectedStatusCode = 200;
     char *expectedStatus = "OK";
     char *expectedBody = "<h1>This is the body!</h1>";
 
+    // Check for statsu and statusCode 
     if (response->statusCode != expectedStatusCode) {
         printf(ANSI_COLOR_RED "Wrong status code. Expected: %d, Got: %d\n" ANSI_COLOR_RESET,
                expectedStatusCode, response->statusCode);
@@ -50,12 +55,6 @@ bool canParseHttpResponse() {
                expectedStatus, response->status);
         return false;
     }
-    if (response->status == NULL ||
-        strcmp(response->body, expectedBody) != 0) {
-        printf(ANSI_COLOR_RED "Wrong body. Expected: '%s', Got: '%s'\n" ANSI_COLOR_RESET,
-               expectedBody, response->body);
-        return false;
-    }
 
     // Check headers
     char *expectedKeys[] = {"key1", "key2", "key3"};
@@ -63,7 +62,7 @@ bool canParseHttpResponse() {
     size_t n = sizeof(expectedKeys) / sizeof(expectedKeys[0]);
 
     if (response->headerList == NULL) {
-        printf(ANSI_COLOR_RED "Expected %zu headers. Got 0" ANSI_COLOR_RESET, n);
+        printf(ANSI_COLOR_RED "Expected %zu headers. Got (null)\n" ANSI_COLOR_RESET, n);
         return false;
     }
 
@@ -71,10 +70,13 @@ bool canParseHttpResponse() {
     for (size_t i = 0; i < n; i++) {
         header = httpHeaderListGet(response->headerList, expectedKeys[i]);
         if (header == NULL) {
-            printf(ANSI_COLOR_RED "Expected header with key: '%s' not found\n" ANSI_COLOR_RESET,
-                    expectedKeys[i]);
+            printf(ANSI_COLOR_RED 
+                   "Expected header with key: '%s' not found\n"
+                   ANSI_COLOR_RESET,
+                   expectedKeys[i]);
             return false;
         }
+
         if (strcmp(header->value, expectedValues[i]) != 0) {
             printf(ANSI_COLOR_RED "Wrong value for header with key: '%s'."
                    "Expected: '%s', Got: '%s'\n" ANSI_COLOR_RESET,
@@ -82,6 +84,15 @@ bool canParseHttpResponse() {
             return false;
         }
     }
+
+    // Check body
+    if (response->body == NULL ||
+        strcmp(response->body, expectedBody) != 0) {
+        printf(ANSI_COLOR_RED "Wrong body. Expected: '%s', Got: '%s'\n" ANSI_COLOR_RESET,
+               expectedBody, response->body);
+        return false;
+    }
+    puts("Finished");
 
     return true;
 }
