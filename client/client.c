@@ -7,6 +7,10 @@
 #include "../utils/parsers.h"
 
 
+// Starts running the client by connecting to the server through 
+// the socket passed in by the Client struct.
+// Returns true if the connection was successfully established
+// and returns false if failed to connect to server
 static bool launch(Client *client) {
     int connectionFailed = connect(client->socket,
                                    (struct sockaddr *) &client->address,
@@ -21,6 +25,8 @@ static bool launch(Client *client) {
     return true;
 }
 
+// Sends an HTTP request synchronously and returns an HttpResponse
+// struct that contains the HTTP response from the server
 static HttpResponse *sendRequest(Client *client, HttpRequest *request) {
     HttpResponse *response = malloc(sizeof(HttpResponse));
     char *requestString = stringifyHttpRequest(request);
@@ -37,6 +43,7 @@ static HttpResponse *sendRequest(Client *client, HttpRequest *request) {
     return response;
 }
 
+// Stops the client from running by closing down the socket
 static void stop(Client *client) {
     puts("Closing client socket...");
     shutdown(client->socket, SHUT_RDWR);
