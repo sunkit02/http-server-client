@@ -45,17 +45,21 @@ build: build-lib build-server
 
 
 .PHONY: build-server
-build-server: main.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o
+build-server: main.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o $(BUILD_DIR)/httpheader_list.o
 	@echo Compiling and linking server executable...
 	@$(CC) $^ -o $(BUILD_DIR)/$(BUILD_TARGET)
 	@echo Built server successfully!
 
 
 .PHONY: build-lib
-build-lib: create_build_dir $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o
+build-lib: create_build_dir $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o $(BUILD_DIR)/httpheader_list.o
 	@echo Library built successfully!
 
 $(BUILD_DIR)/server.o: server.c 
+	@echo Compiling $@...
+	@$(CC) -c $< -o $@ 
+
+$(BUILD_DIR)/httpheader_list.o: ../utils/httpheader_list.c 
 	@echo Compiling $@...
 	@$(CC) -c $< -o $@ 
 

@@ -47,7 +47,6 @@ typedef struct {
     bool canDelete;
 } HttpEndPoint;
 
-
 // Constructs an empty HttpHeaderList.
 // Returns NULL if failed to construct the list
 HttpHeaderList *constructHttpHeaderList(size_t capacity);

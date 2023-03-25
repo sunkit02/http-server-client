@@ -156,5 +156,3 @@ int main() {
     // Start server
     server.launch(&server);
 }
-
-

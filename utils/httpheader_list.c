@@ -77,6 +77,7 @@ bool httpHeaderListRemove(HttpHeaderList *list, char *key) {
             for (size_t j = i; j < list->size - 1; j++) {
                 list->headers[j] = list->headers[j + 1];
             }
+
             list->size--;
 
             return true;
@@ -89,7 +90,7 @@ bool httpHeaderListContainsHeader(HttpHeaderList *list, char *key) {
     for (size_t i = 0; i < list->size; i++) {
         if (strcmp(list->headers[i]->key, key) == 0) {
             return true;
-        }
+    }
     }
     return false;
 }
