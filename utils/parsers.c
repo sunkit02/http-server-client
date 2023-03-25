@@ -61,6 +61,27 @@ HttpMethods parseMethodStr(char *methodStr) {
     return method;
 }
 
+char *stringifyHttpMethod(HttpMethods method) {
+    char *methodStr;
+    switch (method) {
+        case GET:
+            methodStr = "GET";
+            break;
+        case POST:
+            methodStr = "POST";
+            break;
+        case PUT:
+            methodStr = "PUT";
+            break;
+        case DELETE:
+            methodStr = "DELETE";
+            break;
+        default:
+            methodStr = NULL;
+    }
+    return methodStr;
+}
+
 
 HttpRequest *parseHttpRequest(const char *const rawRequest) {
     // Copy request string to another memory address to keep original unmodified
@@ -182,8 +203,41 @@ HttpResponse *parseHttpResponse(const char *const rawResponse) {
     return response;
 }
 
-
+// Returns a stringified representation of an HTTP request.
+// The returned string needs to be manually freed
 char *stringifyHttpRequest(HttpRequest *request) {
-    return "GET / HTTP/1.1\r\n\r\n";
+    // TODO: Make buffer dynamically sized
+    char *requestStr = malloc(1024);
+    char *tempBuffer = malloc(1024);
 
+    // Method
+    char *methodStr = stringifyHttpMethod(request->method);
+    if (methodStr == NULL) return NULL;
+    strcat(requestStr, methodStr);
+    strcat(requestStr, " ");
+
+    // Url
+    strcat(requestStr, request->url);
+    strcat(requestStr, " ");
+
+    // HTTP version
+    strcat(requestStr, "HTTP/1.1");
+    strcat(requestStr, "\r\n");
+
+    // Headers
+    for (size_t i = 0; i < request->headerList->size; i++) {
+        HttpHeader *header = request->headerList->headers[i];
+        sprintf(tempBuffer, 
+                "%s:%s\r\n", header->key, header->value);
+        strcat(requestStr, tempBuffer);
+    }
+    // End of headers
+    strcat(requestStr, "\r\n");
+
+    // Body
+    strcat(requestStr, request->body);
+    strcat(requestStr, "\r\n");
+
+    free(tempBuffer);
+    return requestStr;
 }
