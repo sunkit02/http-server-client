@@ -27,7 +27,6 @@ typedef struct client {
 } Client;
 
 // Client construction
-Client *constructClient(int domain, int service, int protocol,
-                        char *serverIpAddress, int port);
+Client *constructHttpClient(char *serverIpAddress, int port);
 
 #endif

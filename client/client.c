@@ -53,21 +53,20 @@ static void stop(Client *client) {
 
 // Construct an HTTP client capable of both sending requests and
 // receiving responses to an HTTP server
-Client *constructClient(int domain, int service, int protocol,
-                       char *serverIpAddress, int port) {
+Client *constructHttpClient(char *serverIpAddress, int port) {
     Client *client = malloc(sizeof(Client));
 
-    client->domain = domain;
-    client->service = service;
-    client->protocol = protocol;
+    client->domain = AF_INET;
+    client->service = SOCK_STREAM;
+    client->protocol = 0;
     client->serverIpAddress = serverIpAddress;
     client->port = port;
 
-    client->address.sin_family = domain;
+    client->address.sin_family = AF_INET;
     client->address.sin_port = htons(port);
     client->address.sin_addr.s_addr = inet_addr(serverIpAddress);
 
-    client->socket = socket(domain, service, protocol);
+    client->socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client->socket == 0) {
         puts("Failed to create socket...");
         return NULL;

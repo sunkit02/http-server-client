@@ -13,8 +13,7 @@
 #include <unistd.h>
 
 int main(void) {
-    Client *client = constructClient(AF_INET, SOCK_STREAM, 0,
-                                    "127.0.0.1", 9001);
+    Client *client = constructHttpClient("127.0.0.1", 9001);
     if (client == NULL) {
         puts("Failed to construct client");
         return 1;
