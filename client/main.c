@@ -18,11 +18,15 @@ int main(void) {
         puts("Failed to construct client");
         return 1;
     }
+    puts("Cosntructed Client");
 
     if (client->launch(client) == false) {
-        puts("Failed to launch server...");
+        puts("Failed to client server...");
         return 1;
     }
+
+    puts("launched client");
+
 
     HttpRequest request;
     request.url = "/";
@@ -31,12 +35,22 @@ int main(void) {
     request.body = NULL;
     request.numOfHeaders = 0;
 
+    puts("Sending request");
     HttpResponse *response = client->sendRequest(client, &request);
-    printf("HttpResponse(status=%d, headers=%s, body=%s)\n",
+    printf("\n\nHttpResponse(status=%d, headers=%s, body=%s)\n\n",
                 response->statusCode, (char *)NULL, response->body);
+    puts("Request sent");
 
+    puts("Sending request2");
     request.url = "/data";
     response = client->sendRequest(client, &request);
-    printf("HttpResponse(status=%d, headers=%s, body=%s)\n",
+    printf("\n\nHttpResponse(status=%d, headers=%s, body=%s)\n\n",
+                response->statusCode, (char *)NULL, response->body);
+
+
+    char newUrl[] = "/";
+    request.url = newUrl;
+    response = client->sendRequest(client, &request);
+    printf("\n\nHttpResponse(status=%d, headers=%s, body=%s)\n\n",
                 response->statusCode, (char *)NULL, response->body);
 }
