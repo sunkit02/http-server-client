@@ -209,8 +209,8 @@ HttpResponse *parseHttpResponse(const char *const rawResponse) {
 // The returned string needs to be manually freed.
 char *stringifyHttpRequest(HttpRequest *request) {
     // TODO: Make buffer dynamically sized
-    char *requestStr = malloc(1024);
-    char *tempBuffer = malloc(1024);
+    char *requestStr = calloc(1024, sizeof(char));
+    char *tempBuffer = calloc(1024, sizeof(char));
 
     // Method
     char *methodStr = stringifyHttpMethod(request->method);
