@@ -1,9 +1,33 @@
-#include "server.h"
-#include "../utils/parsers.h"
+#include <signal.h>
 #include <sys/socket.h>
 
+#include "server.h"
+#include "../utils/parsers.h"
+
+
+// Objects created for handleKeyBoardInterrupt() to access
+// in event of user keyboard interuptions
+static Server server;
+static int clientSocket;
+
+
+void handleKeyBoardInterrupt(int sig) {
+    puts("\nGracefully shutting down server...");
+
+    printf("Closing socket on port %d...\n", server.port);
+    shutdown(server.socket, SHUT_RDWR);
+    close(server.socket);
+
+    puts("Closing client socket...");
+    shutdown(clientSocket, SHUT_RDWR);
+    close(clientSocket);
+
+    puts("Successfully shutdown server");
+    exit(0);
+}
+
 void handleGetHome(int clientSocket) {
-	char *response = "HTTP/1.1 200 OK\r\n\n"
+	char *response = "HTTP/1.1 200 OK\r\n\r\n"
 		"<h1>Welcome to the Home Page!</h1>";
 	send(clientSocket, response, strlen(response), 0);
 }
@@ -17,7 +41,8 @@ void handleNotFound(int clientSocket) {
 // returns true for valid endpoint and false for invalid
 bool handleRequest(HttpRequest *request, int clientSocket) {
 	// identify endpoint
-	if (strcmp(request->url, "/") == 0) handleGetHome(clientSocket);
+	if (strcmp(request->url, "/") == 0 &&
+        request->method == GET) handleGetHome(clientSocket);
 	else handleNotFound(clientSocket);
 	return true;
 }
@@ -34,7 +59,7 @@ void launchServer(Server *server) {
 	printf("Listening on port %d\n", server->port);
 
 	char requestBuffer[2028];
-	int clientSocket;
+	// clientSocket;
 	while (true) {
 		// accept request
 		clientSocket = accept(server->socket, NULL, NULL);
@@ -59,9 +84,12 @@ void launchServer(Server *server) {
 }
 
 int main(void) {
+    // Register function for handling keyboard interuptions via C-c
+    signal(SIGINT, handleKeyBoardInterrupt);
+
 	EndpointList endpointList = constructEndpointList(10);
 	registerEndpoint(&endpointList, "/", GET);
 
-	Server server = constructServer(AF_INET, SOCK_STREAM, 0, INADDR_ANY, 9001, 10, &endpointList,launchServer);
+	server = constructServer(AF_INET, SOCK_STREAM, 0, INADDR_ANY, 9001, 10, &endpointList,launchServer);
 	server.launch(&server);
 }
