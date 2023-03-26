@@ -26,7 +26,8 @@ Server constructServer(int domain, int service, int protocol,
         exit(1);
     }
 
-    if (bind(server.socket, (struct sockaddr *)&server.address,
+    if (bind(server.socket,
+             (struct sockaddr *)&server.address,
              sizeof(server.address)) < 0) {
         perror("Failed to bind socket...\n");
         exit(1);
