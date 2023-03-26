@@ -29,14 +29,13 @@ static bool launch(Client *client) {
 // struct that contains the HTTP response from the server
 static HttpResponse *sendRequest(Client *client, HttpRequest *request) {
     HttpResponse *response = malloc(sizeof(HttpResponse));
+
     char *requestString = stringifyHttpRequest(request);
 
     char responseBuffer[2048];
     
-    send(client->socket, requestString, strlen(requestString), 0);
+    send(client->socket, requestString, strlen(requestString) + 1, 0);
     recv(client->socket, &responseBuffer, sizeof(responseBuffer), 0);
-
-    printf("Response received:\n%s\n", responseBuffer);
 
     response = parseHttpResponse(responseBuffer);
 
@@ -67,7 +66,7 @@ Client *constructHttpClient(char *serverIpAddress, int port) {
     client->address.sin_addr.s_addr = inet_addr(serverIpAddress);
 
     client->socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (client->socket == 0) {
+    if (client->socket == -1) {
         puts("Failed to create socket...");
         return NULL;
     }
