@@ -194,17 +194,19 @@ HttpResponse *parseHttpResponse(const char *const rawResponse) {
     response->headerList = headerList;
 
 
-    // Parse body
-    // response->body = "<h1>This is the body!</h1>";
-    response->body = malloc(strlen(bodyPtr) + 1);
-    if (response->body == NULL) return NULL;
-    strcpy(response->body, bodyPtr);
+    // Parse body if exists
+    if (bodyPtr != NULL) {
+        response->body = malloc(strlen(bodyPtr) + 1);
+        if (response->body == NULL) return NULL;
+        strcpy(response->body, bodyPtr);
+    }
 
     return response;
 }
 
 // Returns a stringified representation of an HTTP request.
-// The returned string needs to be manually freed
+// Returns NULL if any essential fields are NULL (i.e. url)
+// The returned string needs to be manually freed.
 char *stringifyHttpRequest(HttpRequest *request) {
     // TODO: Make buffer dynamically sized
     char *requestStr = malloc(1024);
@@ -217,6 +219,7 @@ char *stringifyHttpRequest(HttpRequest *request) {
     strcat(requestStr, " ");
 
     // Url
+    if (request->url == NULL) return NULL;
     strcat(requestStr, request->url);
     strcat(requestStr, " ");
 
@@ -225,18 +228,26 @@ char *stringifyHttpRequest(HttpRequest *request) {
     strcat(requestStr, "\r\n");
 
     // Headers
-    for (size_t i = 0; i < request->headerList->size; i++) {
-        HttpHeader *header = request->headerList->headers[i];
-        sprintf(tempBuffer, 
-                "%s:%s\r\n", header->key, header->value);
-        strcat(requestStr, tempBuffer);
+    if (request->headerList != NULL) {
+        for (size_t i = 0; i < request->headerList->size; i++) {
+            HttpHeader *header = request->headerList->headers[i];
+            sprintf(tempBuffer, 
+                    "%s:%s\r\n", header->key, header->value);
+            strcat(requestStr, tempBuffer);
+        }
+        // End of headers
+        strcat(requestStr, "\r\n");
     }
-    // End of headers
-    strcat(requestStr, "\r\n");
 
     // Body
-    strcat(requestStr, request->body);
-    strcat(requestStr, "\r\n");
+    if (request->body != NULL) {
+        strcat(requestStr, request->body);
+        strcat(requestStr, "\r\n");
+    }
+
+
+    printf("Strigified request:\n%s\n", requestStr);
+    
 
     free(tempBuffer);
     return requestStr;
