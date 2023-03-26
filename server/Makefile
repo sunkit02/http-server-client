@@ -1,4 +1,5 @@
 CC=gcc # C compiler
+FLAGS=-g -ggdb
 
 BUILD_DIR=build
 BUILD_TARGET=simple_server # Name of build executable
@@ -21,12 +22,12 @@ test: build-lib create_test_dir $(TEST_BUILD_DIR)/$(TEST_NAME)
 # TODO: Figure out why servertest.c cannot be replaced with $(TEST_NAME)
 $(TEST_BUILD_DIR)/$(TEST_NAME): servertest.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o
 	@echo Compiling tests...
-	@$(CC) $^ -o $@
+	@$(CC) $(FLAGS) $^ -o $@
 	@echo Compiled tests successfully!
 
 # $(TEST_NAME): $(TEST_NAME).c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o
 # 	@echo Compiling tests...
-# 	@$(CC) $^ -o $@
+# 	@$(CC) $(FLAGS) $^ -o $@
 # 	@echo Compiled tests successfully!
 
 create_test_dir:
@@ -47,7 +48,7 @@ build: build-lib build-server
 .PHONY: build-server
 build-server: main.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o $(BUILD_DIR)/httpheader_list.o
 	@echo Compiling and linking server executable...
-	@$(CC) $^ -o $(BUILD_DIR)/$(BUILD_TARGET)
+	@$(CC) $(FLAGS) $^ -o $(BUILD_DIR)/$(BUILD_TARGET)
 	@echo Built server successfully!
 
 
@@ -57,19 +58,19 @@ build-lib: create_build_dir $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD
 
 $(BUILD_DIR)/server.o: server.c 
 	@echo Compiling $@...
-	@$(CC) -c $< -o $@ 
+	@$(CC) $(FLAGS) -c $< -o $@ 
 
 $(BUILD_DIR)/httpheader_list.o: ../utils/httpheader_list.c 
 	@echo Compiling $@...
-	@$(CC) -c $< -o $@ 
+	@$(CC) $(FLAGS) -c $< -o $@ 
 
 $(BUILD_DIR)/parsers.o: ../utils/parsers.c 
 	@echo Compiling $@...
-	@$(CC) -c $< -o $@ 
+	@$(CC) $(FLAGS) -c $< -o $@ 
 
 $(BUILD_DIR)/endpointlist.o: datastructures/endpointlist.c 
 	@echo Compiling $@...
-	@$(CC) -c $< -o $@ 
+	@$(CC) $(FLAGS) -c $< -o $@ 
 
 
 create_build_dir: 

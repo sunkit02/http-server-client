@@ -1,4 +1,5 @@
 CC=gcc # C compiler
+FLAGS=-g -ggdb
 
 BUILD_DIR=build
 BUILD_TARGET=simple_client # Name of build executable
@@ -24,7 +25,7 @@ build: build-lib build-client
 .PHONY: build-client
 build-client: main.c $(BUILD_DIR)/client.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/httpheader_list.o
 	@echo Compiling and linking client executable...
-	@$(CC) $^ -o $(BUILD_DIR)/$(BUILD_TARGET)
+	@$(CC) $(FLAGS) $^ -o $(BUILD_DIR)/$(BUILD_TARGET)
 	@echo Built server successfully!
 
 
@@ -34,15 +35,15 @@ build-lib: create_build_dir $(BUILD_DIR)/client.o $(BUILD_DIR)/parsers.o $(BUILD
 	 
 $(BUILD_DIR)/client.o: client.c
 	@echo Compiling $@...
-	@$(CC) -c $< -o $@ 
+	@$(CC) $(FLAGS) -c $< -o $@ 
 
 $(BUILD_DIR)/httpheader_list.o: ../utils/httpheader_list.c
 	@echo Compiling $@...
-	@$(CC) -c $< -o $@ 
+	@$(CC) $(FLAGS) -c $< -o $@ 
 
 $(BUILD_DIR)/parsers.o: ../utils/parsers.c 
 	@echo Compiling $@...
-	@$(CC) -c $< -o $@ 
+	@$(CC) $(FLAGS) -c $< -o $@ 
 
 create_build_dir:
 	@mkdir -p $(BUILD_DIR)
@@ -52,3 +53,7 @@ create_build_dir:
 test:
 	@echo Running client tests...
 
+.PHONY: clean
+clean: 
+	@echo Removing object files and executables...
+	@rm -rf build/
