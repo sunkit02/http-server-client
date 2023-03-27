@@ -150,9 +150,7 @@ int main() {
     printEndpointList(&endpointList);
 
     // Create server object
-    server = constructServer(AF_INET, SOCK_STREAM, 0,
-                             INADDR_ANY, LISTENING_PORT, 10,
-                             &endpointList,launchServer);
+    server = constructServer(LISTENING_PORT, 10, &endpointList,launchServer);
     // Start server
     server.launch(&server);
 }

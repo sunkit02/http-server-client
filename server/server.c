@@ -4,23 +4,24 @@
 #include "server.h"
 #include "../utils/parsers.h"
 
-Server constructServer(int domain, int service, int protocol,
-                       u_long interface, int port, int backlog,
-                       EndpointList *endpointList, void (*launch)(Server *server)) {
+Server constructServer(int port, int backlog, EndpointList *endpointList, 
+                       void (*launch)(Server *server)) {
     Server server;
 
-    server.domain = domain;
-    server.service = service;
-    server.protocol = protocol;
-    server.interface = interface;
+    // server.domain = domain;
+    // server.service = service;
+    // server.protocol = protocol;
+    // server.interface = interface;
     server.port = port;
     server.backlog = backlog;
 
-    server.address.sin_family = domain;
+    server.address.sin_family = AF_INET;
     server.address.sin_port = htons(port);
-    server.address.sin_addr.s_addr = interface;
+    server.address.sin_addr.s_addr = INADDR_ANY;
 
-    server.socket = socket(domain, service, protocol);
+
+    server.socket = socket(AF_INET, SOCK_STREAM, 0);
+
     if (server.socket == 0) {
         perror("Failed to connect socket...\n");
         exit(1);

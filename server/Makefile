@@ -20,7 +20,7 @@ test: build-lib create_test_dir $(TEST_BUILD_DIR)/$(TEST_NAME)
 	@echo All tests passed!
 
 # TODO: Figure out why servertest.c cannot be replaced with $(TEST_NAME)
-$(TEST_BUILD_DIR)/$(TEST_NAME): servertest.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o
+$(TEST_BUILD_DIR)/$(TEST_NAME): servertest.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o $(BUILD_DIR)/httpheader_list.o
 	@echo Compiling tests...
 	@$(CC) $(FLAGS) $^ -o $@
 	@echo Compiled tests successfully!

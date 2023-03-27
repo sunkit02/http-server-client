@@ -1,6 +1,5 @@
 #include <signal.h>
 #include <sys/socket.h>
-
 #include "server.h"
 #include "../utils/parsers.h"
 
@@ -91,6 +90,9 @@ int main(void) {
 	EndpointList endpointList = constructEndpointList(10);
 	registerEndpoint(&endpointList, "/", GET);
 
-	server = constructServer(AF_INET, SOCK_STREAM, 0, INADDR_ANY, 9001, 10, &endpointList,launchServer);
+	// server = constructServer(AF_INET, SOCK_STREAM, 0,
+ //                             INADDR_ANY, 9001, 10,
+ //                             &endpointList, launchServer);
+    server = constructServer(9001, 10, &endpointList, launchServer);
 	server.launch(&server);
 }
