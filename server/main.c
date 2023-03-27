@@ -59,32 +59,33 @@ void launchServer(Server *server) {
 	printf("Listening on port %d\n", server->port);
 
 	char requestBuffer[2028];
-	// clientSocket;
+    
+    // Main listening loop
 	while (true) {
 		// accept request
 		clientSocket = accept(server->socket, NULL, NULL);
 		puts("Handling a request...");
 
-		// read request
+		// Read request
 		recv(clientSocket, &requestBuffer, sizeof(requestBuffer), 0);
 
-		// parse request (printf for now )
+		// Parse request (printf for now )
 		printf("Request received:\n %s\n", requestBuffer);
 		HttpRequest *request = parseHttpRequest(requestBuffer);
 		printf("Request(method=%d, url=%s, body=%s)\n", request->method, request->url, request->body);
 
-		// invoke callback for request
+		// Invoke callback for request
 		// handleGetHome(clientSocket);
 		handleRequest(request, clientSocket); 
 
-		// close clientSocket
+		// Close clientSocket
 		shutdown(clientSocket, SHUT_RDWR);
 		close(clientSocket);
 	}
 }
 
 int main(void) {
-    // Register function for handling keyboard interuptions via C-c
+    // Register callback for handling keyboard interuptions via <C-c>
     signal(SIGINT, handleKeyBoardInterrupt);
 
 	EndpointList endpointList = constructEndpointList(10);
