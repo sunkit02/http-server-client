@@ -25,11 +25,6 @@ $(TEST_BUILD_DIR)/$(TEST_NAME): servertest.c $(BUILD_DIR)/server.o $(BUILD_DIR)/
 	@$(CC) $(FLAGS) $^ -o $@
 	@echo Compiled tests successfully!
 
-# $(TEST_NAME): $(TEST_NAME).c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o
-# 	@echo Compiling tests...
-# 	@$(CC) $(FLAGS) $^ -o $@
-# 	@echo Compiled tests successfully!
-
 create_test_dir:
 	@echo Creating test directories...
 	@mkdir -p $(TEST_DIR)

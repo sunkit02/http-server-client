@@ -43,7 +43,7 @@ void handleMethodNotSupported(int clientSocket) {
 }
 
 void handleGetHome(int clientSocket) {
-    char *homePage = "<h1>Welcome to the Home Page!</h1>";
+    char *homePage = "<h1>Welcome to the TEST Home Page!</h1>";
     char *header = "HTTP/1.1 200 OK\r\n\n";
     char *response = calloc(1000, sizeof(char));
     strcat(response, header);
@@ -58,7 +58,7 @@ void handleGetData(int clientSocket) {
     send(clientSocket, response, strlen(response), 0);
 }
 
-void handlePostUser(int clientSocket, HttpRequest request) {
+void handlePostUser(int clientSocket, HttpRequest *request) {
     char *response = "HTTP/1.1 201 Created\r\n";
      
 
@@ -81,6 +81,14 @@ bool handleRequest(HttpRequest *request, int clientSocket) {
         switch(request->method) {
             case GET:
                 handleGetData(clientSocket);
+                break;
+            default:
+                handleMethodNotSupported(clientSocket);
+        }
+    } else if (strcmp(request->url, "/user") == 0) {
+        switch (request->method) {
+            case POST:
+                handlePostUser(clientSocket, request);
                 break;
             default:
                 handleMethodNotSupported(clientSocket);
@@ -150,7 +158,11 @@ int main() {
     printEndpointList(&endpointList);
 
     // Create server object
-    server = constructServer(LISTENING_PORT, 10, &endpointList,launchServer);
+    server = constructServer(LISTENING_PORT, 10, &endpointList, launchServer);
+
     // Start server
+    /////////////////////////////////////////////////
+    /// Catch segfault in server.launch(&server); ///
+    /////////////////////////////////////////////////
     server.launch(&server);
 }
