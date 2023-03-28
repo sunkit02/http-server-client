@@ -83,25 +83,25 @@ char *stringifyHttpMethod(HttpMethods method) {
 }
 
 
+///////////////////////////////////////////////
+/// Fix reading outside of body string ////////
+///////////////////////////////////////////////
 HttpRequest *parseHttpRequest(const char *const rawRequest) {
     // Copy request string to another memory address to keep original unmodified
-    char *buffer = malloc(strlen(rawRequest));
-    memcpy(buffer, rawRequest, strlen(rawRequest));
+    char *buffer = malloc(strlen(rawRequest) + 1);
+    strcpy(buffer, rawRequest);
 
     HttpRequest *request = malloc(sizeof(HttpRequest));
-    request->numOfHeaders = 0;
 
     // Get pointer to HTTP Method and copy to another memory location
     // while leaving original string unmodified to prevent memory leaks
     char *method = strtok(buffer, " ");
-    // char *tempMethod = malloc(strlen(method));
-    // memcpy(tempMethod, method, strlen(method));
     request->method = parseMethodStr(method);
 
     // Do the same thing for the url
     char *url = strtok(NULL, " ");
-    char *tempUrl = malloc(strlen(url));
-    memcpy(tempUrl, url, strlen(url));
+    char *tempUrl = malloc(strlen(url) + 1);
+    strcpy(tempUrl, url);
     request->url = tempUrl;
 
     //////////////////////////////////////////
@@ -116,8 +116,8 @@ HttpRequest *parseHttpRequest(const char *const rawRequest) {
         request->body = NULL;
     } else {
         // copy request body to another memory loation if exists
-        char *tempBody = malloc(strlen(body));
-        memcpy(tempBody, body, strlen(body));
+        char *tempBody = malloc(strlen(body) + 1);
+        strcpy(tempBody, body);
         request->body = tempBody;
     }
 
@@ -251,4 +251,10 @@ char *stringifyHttpRequest(HttpRequest *request) {
 
     free(tempBuffer);
     return requestStr;
+}
+
+void freeHttpRequest(HttpRequest *request) {
+    free(request->url);
+    free(request->body);
+    free(request->headerList);
 }

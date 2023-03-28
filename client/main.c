@@ -33,7 +33,6 @@ int main(void) {
     request.headerList = NULL;
     request.method = GET;
     request.body = NULL;
-    request.numOfHeaders = 0;
 
     puts("Sending request");
     HttpResponse *response = client->sendRequest(client, &request);

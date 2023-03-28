@@ -27,7 +27,6 @@ typedef struct {
     char *url;
     char *body;
     HttpHeaderList *headerList;
-    size_t numOfHeaders;
 } HttpRequest;
 
 
@@ -39,12 +38,17 @@ typedef struct {
 } HttpResponse;
 
 
+// typedef struct {
+//     char *url;
+//     bool canGet;
+//     bool canPost;
+//     bool canPut;
+//     bool canDelete;
+// } HttpEndPoint;
+
 typedef struct {
     char *url;
-    bool canGet;
-    bool canPost;
-    bool canPut;
-    bool canDelete;
+    void (*callbacks[4])(int clientSocket, HttpRequest *request);
 } HttpEndPoint;
 
 // Constructs an empty HttpHeaderList.
@@ -73,5 +77,3 @@ bool httpHeaderListContainsHeader(HttpHeaderList *list, char *key);
 
 
 #endif // !HTTP_H
-
-

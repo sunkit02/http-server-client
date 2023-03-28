@@ -42,7 +42,7 @@ void handleMethodNotSupported(int clientSocket) {
     send(clientSocket, response, strlen(response), 0);
 }
 
-void handleGetHome(int clientSocket) {
+void handleGetHome(int clientSocket, HttpRequest *request) {
     char *homePage = "<h1>Welcome to the TEST Home Page!</h1>";
     char *header = "HTTP/1.1 200 OK\r\n\n";
     char *response = calloc(1000, sizeof(char));
@@ -52,7 +52,7 @@ void handleGetHome(int clientSocket) {
     free(response);
 }
 
-void handleGetData(int clientSocket) {
+void handleGetData(int clientSocket, HttpRequest *request) {
     char *response = "HTTP/1.1 200 OK\r\nContent-Type: application/json\r\n\r\n"
         "{\"name\": \"Sun Kit\"}";
     send(clientSocket, response, strlen(response), 0);
@@ -60,45 +60,32 @@ void handleGetData(int clientSocket) {
 
 void handlePostUser(int clientSocket, HttpRequest *request) {
     char *response = "HTTP/1.1 201 Created\r\n";
-     
-
-
+    send(clientSocket, response, strlen(response), 0);
 }
 
 // Parses url and invokes the callback for the endpoint
 // returns true for valid endpoint and false for invalid
-bool handleRequest(HttpRequest *request, int clientSocket) {
-    // identify endpoint by url
-    if (strcmp(request->url, "/") == 0) {
-        switch (request->method) {
-            case GET:
-                handleGetHome(clientSocket);
-                break;
-            default: 
+void handleRequest(Server *server, int clientSocket, HttpRequest *request) {
+    EndpointList *endpointList = server->endpointList;
+    HttpEndPoint *endpoints = endpointList->endpoints;
+
+    for (size_t i = 0; i < endpointList->size; i++) {
+        // Check if the endpoint exists for the request
+        // 1. Url exists
+        if (strcmp(request->url, endpoints[i].url) == 0) {
+            // 2. HTTP method is supported
+            if (endpoints[i].callbacks[request->method] != NULL) {
+                // Invoke callback if endpoints exits
+                endpoints[i].callbacks[request->method](clientSocket, request);
+            } else {
                 handleMethodNotSupported(clientSocket);
+            }
+            // Return anyway if URL exists
+            return;
         }
-    } else if (strcmp(request->url, "/data") == 0) {
-        switch(request->method) {
-            case GET:
-                handleGetData(clientSocket);
-                break;
-            default:
-                handleMethodNotSupported(clientSocket);
-        }
-    } else if (strcmp(request->url, "/user") == 0) {
-        switch (request->method) {
-            case POST:
-                handlePostUser(clientSocket, request);
-                break;
-            default:
-                handleMethodNotSupported(clientSocket);
-        }
-    } else {
-        // handle case when url is not a registered endpoint
-        handleNotFound(clientSocket);
-        return false;
     }
-    return true;
+    // Catch all for unmatched URLs
+    handleNotFound(clientSocket);
 }
 
 
@@ -136,7 +123,7 @@ void launchServer(Server *server) {
         printf("\nRequest(method=%d, url=%s, body=%s)\n", request->method, request->url, request->body);
 
         // Handle the request
-        handleRequest(request, clientSocket); 
+        handleRequest(server, clientSocket, request); 
 
         // Close clientSocket
         shutdown(clientSocket, SHUT_RDWR);
@@ -150,15 +137,15 @@ int main() {
     signal(SIGINT, handleKeyBoardInterrupt);
 
     // Register endpoints for server
-    EndpointList endpointList = constructEndpointList(10);
-    registerEndpoint(&endpointList, "/", GET);
-    registerEndpoint(&endpointList, "/data", GET);
-    registerEndpoint(&endpointList, "/user", POST);
+    EndpointList *endpointList = constructEndpointList(10);
+    registerEndpoint(endpointList, "/", GET, handleGetHome);
+    registerEndpoint(endpointList, "/data", GET, handleGetData);
+    registerEndpoint(endpointList, "/user", POST, handlePostUser);
     puts("Finished registering endpoints");
-    printEndpointList(&endpointList);
+    printEndpointList(endpointList);
 
     // Create server object
-    server = constructServer(LISTENING_PORT, 10, &endpointList, launchServer);
+    server = constructServer(LISTENING_PORT, 10, endpointList, launchServer);
 
     // Start server
     /////////////////////////////////////////////////

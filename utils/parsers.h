@@ -50,4 +50,6 @@ char *stringifyHttpRequest(HttpRequest *request);
 // Returns a NULL pointer if failed to parse the response.
 HttpResponse *parseHttpResponse(const char *const rawResponse);
 
+void freeHttpRequest(HttpRequest *request);
+
 #endif // !DEBUG

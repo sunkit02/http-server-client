@@ -32,9 +32,10 @@ typedef struct server {
 /*############### Function Declarations ##############*/
 
 // Construct endpointlist
-EndpointList constructEndpointList(size_t size);
+EndpointList *constructEndpointList(size_t size);
 // Add endpoint and or method to list
-bool registerEndpoint(EndpointList *list, char *url, HttpMethods httpMethod);
+bool registerEndpoint(EndpointList *list, char *url, HttpMethods httpMethod,
+                      void (*callback)(int clientSocket, HttpRequest *request));
 // Checks if endpoint exists and if the method is supported
 bool supportsEndpoint(EndpointList *list, char *url, HttpMethods httpMethod); 
 // Remove an endpoint

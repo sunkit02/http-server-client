@@ -4,26 +4,28 @@
 #include <string.h>
 #include <stdio.h>
 
-static bool endpointSupportsHttpMethod(HttpEndPoint *endpoint, HttpMethods method) {
-    bool support;
-    switch (method) {
-        case GET:
-            support  = endpoint->canGet ? true : false;
-            break;
-        case POST:
-            support  = endpoint->canPost ? true : false;
-            break;
-        case PUT:
-            support  = endpoint->canPut ? true : false;
-            break;
-        case DELETE:
-            support  = endpoint->canDelete ? true : false;
-            break;
-        default:
-            support = false;
-    }
-    return support;
-}
+#define NUM_OF_SUPPORTED_METHODS 4
+
+// static bool endpointSupportsHttpMethod(HttpEndPoint *endpoint, HttpMethods method) {
+//     bool support;
+//     switch (method) {
+//         case GET:
+//             support  = endpoint->canGet ? true : false;
+//             break;
+//         case POST:
+//             support  = endpoint->canPost ? true : false;
+//             break;
+//         case PUT:
+//             support  = endpoint->canPut ? true : false;
+//             break;
+//         case DELETE:
+//             support  = endpoint->canDelete ? true : false;
+//             break;
+//         default:
+//             support = false;
+//     }
+//     return support;
+// }
 
 static bool resizeEndpointList(EndpointList *list) {
     // Double capacity
@@ -36,33 +38,24 @@ static bool resizeEndpointList(EndpointList *list) {
     return true;
 }
 
-static void addMethodSupportToEndpoint(HttpEndPoint *endpoint, HttpMethods method) {
+static void addMethodSupportToEndpoint(HttpEndPoint *endpoint,
+                                       HttpMethods method,
+                                       void (*callback)(int clientSocket, HttpRequest *request)) {
     printf("Adding support for method=%d to endpoint='%s'\n", method, endpoint->url);
-    switch (method) {
-        case GET:
-            endpoint->canGet = true;
-            break;
-        case POST:
-            endpoint->canPost = true;
-            break;
-        case PUT:
-            endpoint->canPut = true;
-            break;
-        case DELETE:
-            endpoint->canDelete = true;
-            break;
-        case INVALID:
-            return;
-    }
+
+    // Add method and callback to endpoint
+    endpoint->callbacks[method] = callback;
 }
 
 // Construct endpointlist
-EndpointList constructEndpointList(size_t capacity) {
-    EndpointList endpointList;
-    HttpEndPoint *endpoints = malloc(capacity * sizeof(HttpEndPoint));
-    endpointList.endpoints = endpoints;
-    endpointList.size = 0;
-    endpointList.capacity = capacity;
+EndpointList *constructEndpointList(size_t capacity) {
+    EndpointList *endpointList = malloc(sizeof(EndpointList));
+
+    endpointList->endpoints = calloc(capacity, sizeof(HttpEndPoint));
+    if (endpointList->endpoints == NULL) return NULL;
+
+    endpointList->size = 0;
+    endpointList->capacity = capacity;
 
     return endpointList;
 }
@@ -71,8 +64,11 @@ EndpointList constructEndpointList(size_t capacity) {
 // Add endpoint and or method to list
 // Returns true if the endpoint already supports the httpMethod
 // Returns false if failed to add method support to endpoint
-bool registerEndpoint(EndpointList *list, char *url, HttpMethods httpMethod) {
-    if (httpMethod == INVALID) return false;
+bool registerEndpoint(EndpointList *list, 
+                      char *url,
+                      HttpMethods httpMethod,
+                      void (*callback)(int clientSocket, HttpRequest *request)) {
+    if (httpMethod == INVALID || callback == NULL || url == NULL) return false;
 
     printf("Registering endpoint for url='%s', method=%d\n", url, httpMethod);
 
@@ -82,7 +78,7 @@ bool registerEndpoint(EndpointList *list, char *url, HttpMethods httpMethod) {
     for (size_t i = 0; i < list->size; i++) {
         // Check if endpoint has been registered
         if (strcmp(endpoints[i].url, url) == 0) {
-            addMethodSupportToEndpoint(&endpoints[i], httpMethod);
+            addMethodSupportToEndpoint(&endpoints[i], httpMethod, callback);
             return true;
         }
     }
@@ -94,19 +90,26 @@ bool registerEndpoint(EndpointList *list, char *url, HttpMethods httpMethod) {
     }
     // Create endpoint 
     HttpEndPoint *endpoint = malloc(sizeof(HttpEndPoint));
+
+    // Explicitly set all callbacks to NULL
+    for (size_t i = 0; i < NUM_OF_SUPPORTED_METHODS; i++) {
+        endpoint->callbacks[i] = NULL;
+    }
+
     // Copy url to another memory location in case original pointer gets freed
-    // TODO: potentially need to add '\0' to end of new string
-    char *tempUrl = malloc(strlen(url));
-    memcpy(tempUrl, url, strlen(url));
+    char *tempUrl = malloc(strlen(url) + 1);
+    strcpy(tempUrl, url);
     endpoint->url = tempUrl;
-    addMethodSupportToEndpoint(endpoint, httpMethod);
+
+    addMethodSupportToEndpoint(endpoint, httpMethod, callback);
+
     list->endpoints[list->size] = *endpoint;
     list->size++;
     return true;
 }
 
 // Checks if endpoint exists and if the method is supported
-bool supportsEndpoint(EndpointList *list, char *url, HttpMethods httpMethod); 
+bool supportsEndpoint(EndpointList *list, char *url, HttpMethods httpMethod);
 
 // Remove an endpoint
 void freeEndpoint(EndpointList *list,char *url, HttpMethods httpMethod);
@@ -119,19 +122,19 @@ void printEndpointList(EndpointList *list) {
         char methodsStr[10];
         size_t j = 0;
         methodsStr[j++] = '[';
-        if (endpoints[i].canGet) {
+        if (endpoints[i].callbacks[GET] != NULL) {
             methodsStr[j++] = 'G';
             methodsStr[j++] = ',';
         }
-        if (endpoints[i].canPost) {
+        if (endpoints[i].callbacks[POST] != NULL) {
             methodsStr[j++] = 'P';
             methodsStr[j++] = ',';
         }
-        if (endpoints[i].canPut) {
+        if (endpoints[i].callbacks[PUT] != NULL) {
             methodsStr[j++] = 'U';
             methodsStr[j++] = ',';
         }
-        if (endpoints[i].canDelete) {
+        if (endpoints[i].callbacks[DELETE] != NULL) {
             methodsStr[j++] = 'D';
             methodsStr[j++] = ',';
         }
