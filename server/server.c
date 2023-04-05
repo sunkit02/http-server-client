@@ -8,10 +8,6 @@ Server constructServer(int port, int backlog, EndpointList *endpointList,
                        void (*launch)(Server *server)) {
     Server server;
 
-    // server.domain = domain;
-    // server.service = service;
-    // server.protocol = protocol;
-    // server.interface = interface;
     server.port = port;
     server.backlog = backlog;
 

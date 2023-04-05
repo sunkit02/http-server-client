@@ -44,9 +44,6 @@ void freeEndpoint(EndpointList *list,char *url, HttpMethods httpMethod);
 void printEndpointList(EndpointList *list);
 
 // Server construction
-// Server constructServer(int domain, int service, int protocol,
-//                        u_long interface, int port, int backlog,
-//                        EndpointList *endpoints, void (*launch)(Server *server));
 Server constructServer(int port, int backlog, EndpointList *endpointList, 
                        void (*launch)(Server *server));
 

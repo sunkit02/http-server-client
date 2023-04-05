@@ -6,26 +6,6 @@
 
 #define NUM_OF_SUPPORTED_METHODS 4
 
-// static bool endpointSupportsHttpMethod(HttpEndPoint *endpoint, HttpMethods method) {
-//     bool support;
-//     switch (method) {
-//         case GET:
-//             support  = endpoint->canGet ? true : false;
-//             break;
-//         case POST:
-//             support  = endpoint->canPost ? true : false;
-//             break;
-//         case PUT:
-//             support  = endpoint->canPut ? true : false;
-//             break;
-//         case DELETE:
-//             support  = endpoint->canDelete ? true : false;
-//             break;
-//         default:
-//             support = false;
-//     }
-//     return support;
-// }
 
 static bool resizeEndpointList(EndpointList *list) {
     // Double capacity
@@ -98,8 +78,7 @@ bool registerEndpoint(EndpointList *list,
 
     // Copy url to another memory location in case original pointer gets freed
     char *tempUrl = malloc(strlen(url) + 1);
-    strcpy(tempUrl, url);
-    endpoint->url = tempUrl;
+    strcpy(tempUrl, url); endpoint->url = tempUrl;
 
     addMethodSupportToEndpoint(endpoint, httpMethod, callback);
 

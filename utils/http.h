@@ -38,14 +38,6 @@ typedef struct {
 } HttpResponse;
 
 
-// typedef struct {
-//     char *url;
-//     bool canGet;
-//     bool canPost;
-//     bool canPut;
-//     bool canDelete;
-// } HttpEndPoint;
-
 typedef struct {
     char *url;
     void (*callbacks[4])(int clientSocket, HttpRequest *request);
