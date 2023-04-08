@@ -41,4 +41,4 @@ clean: clean-utils
 .PHONY: clean-utils
 clean:
 	@echo Removing utils tests...
-	@rm utils/test/httpheader_list_test utils/test/parsers_test
+	@rm utils/test/build/httpheader_list_test utils/test/build/parsers_test
