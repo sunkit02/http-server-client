@@ -1,3 +1,6 @@
+CC=gcc # C compiler
+FLAGS=-g -ggdb
+
 .PHONY: all
 all: test build
 
@@ -7,14 +10,14 @@ test: create_test_dir test-httpheader-list test-parsers
 
 .PHONY: test-httpheader-list
 test-httpheader-list: utils/test/httpheader_list_test.c utils/httpheader_list.c
-	@gcc $^ -o utils/test/build/httpheader_list_test
+	@$(CC) $(FLAGS) $^ -o utils/test/build/httpheader_list_test
 	@echo "Compiled httpheader_list_test"
 	@printf "Running httpheader_list_test...\n"
 	@utils/test/build/httpheader_list_test
 
 .PHONY: test-parsers
 test-parsers: utils/test/parsers_test.c utils/parsers.c utils/httpheader_list.c
-	@gcc $^ -o utils/test/build/parsers_test
+	@$(CC) $(FLAGS) $^ -o utils/test/build/parsers_test
 	@echo "Compiled parsers_test"
 	@echo "Running parsers_test..."
 	@utils/test/build/parsers_test
