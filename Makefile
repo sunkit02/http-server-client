@@ -9,16 +9,17 @@ test: create_test_dir test-httpheader-list test-parsers
 	@echo All tests ran!
 
 .PHONY: test-httpheader-list
-test-httpheader-list: utils/test/httpheader_list_test.c utils/httpheader_list.c
+test-httpheader-list: utils/test/httpheader_list_test.c utils/httpheader_list.c utils/test/test_utils.c
+	@echo "Compiling httpheader_list_test..."
 	@$(CC) $(FLAGS) $^ -o utils/test/build/httpheader_list_test
-	@echo "Compiled httpheader_list_test"
-	@printf "Running httpheader_list_test...\n"
+	@echo "Running httpheader_list_test..."
 	@utils/test/build/httpheader_list_test
+	@echo
 
 .PHONY: test-parsers
-test-parsers: utils/test/parsers_test.c utils/parsers.c utils/httpheader_list.c
+test-parsers: utils/test/parsers_test.c utils/parsers.c utils/httpheader_list.c utils/test/test_utils.c
+	@echo "Compiling parsers_test..."
 	@$(CC) $(FLAGS) $^ -o utils/test/build/parsers_test
-	@echo "Compiled parsers_test"
 	@echo "Running parsers_test..."
 	@utils/test/build/parsers_test
 

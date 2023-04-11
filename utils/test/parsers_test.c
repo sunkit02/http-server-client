@@ -1,23 +1,11 @@
-#include "../parsers.h"
-#include "../http.h"
 #include <stdbool.h>
 #include <string.h>
 
-// Allows color coded the test results 
-#define ANSI_COLOR_RED     "\x1b[31m"
-#define ANSI_COLOR_GREEN   "\x1b[32m"
-#define ANSI_COLOR_YELLOW  "\x1b[33m"
-#define ANSI_COLOR_BLUE    "\x1b[34m"
-#define ANSI_COLOR_MAGENTA "\x1b[35m"
-#define ANSI_COLOR_CYAN    "\x1b[36m"
-#define ANSI_COLOR_RESET   "\x1b[0m"
+#include "../parsers.h"
+#include "../http.h"
 
-// Print red for fail and green for pass
-#define LOG_PASS(format, ...) printf(ANSI_COLOR_GREEN format ANSI_COLOR_RESET, ##__VA_ARGS__)
-#define LOG_FAIL(format, ...) printf(ANSI_COLOR_RED format ANSI_COLOR_RESET, ##__VA_ARGS__)
+#include "test_utils.h"
 
-// Util function for calling tests
-void runTest(char* testName, bool (*testFunction)());
 
 // Defined tests
 bool canParseHttpResponseWithBody();
@@ -28,21 +16,13 @@ bool canStringifyHttpRequest();
 
 
 int main(void) {
-    runTest("canStringifyHttpRequest",canStringifyHttpRequest);
+    runTest("canStringifyHttpRequest", canStringifyHttpRequest);
     runTest("canParseHttpResponseWithBody", canParseHttpResponseWithBody);
     runTest("canParseHttpResponseWithoutBody", canParseHttpResponseWithoutBody);
     runTest("canParseHttpRequestWithBody", canParseHttpRequestWithBody);
     runTest("canParseHttpRequestWithoutBody", canParseHttpRequestWithoutBody);
 }
 
-// Displays the appropriate message depending on whether a test passed or failed
-void runTest(char* testName, bool (*testFunction)()) {
-    if (testFunction()) {
-        LOG_PASS("Test %s passed!\n", testName);
-    } else {
-        LOG_FAIL("Test %s failed.\n", testName);
-    }
-}
 
 
 bool canParseHttpResponseWithBody() {
