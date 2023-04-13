@@ -4,8 +4,6 @@
 
 #include "http.h"
 
-void httpHeaderDestroy(HttpHeader *header);
-void httpHeaderListDestroy(HttpHeaderList *list);
 
 // Constructs an empty HttpHeaderList
 // Returns NULL if failed to construct the list
