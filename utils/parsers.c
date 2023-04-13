@@ -183,7 +183,10 @@ HttpRequest *parseHttpRequest(const char *const rawRequest) {
     // Allocate memory for headerlist
     HttpHeaderList *headerList = constructHttpHeaderList(5);
     // Ensure that a valid list has been allocated
-    if (headerList == NULL) return NULL;
+    if (headerList == NULL) {
+        httpRequestDestroy(request);
+        return NULL;
+    }
 
     // Continue to parse as headers until reaches 
     // the first character of the response body
@@ -205,6 +208,7 @@ HttpRequest *parseHttpRequest(const char *const rawRequest) {
 
         // Add header to headerList
         if (!httpHeaderListAdd(headerList, tempKey, tempValue)) {
+            httpRequestDestroy(request);
             return NULL;
         }
     }
@@ -261,12 +265,16 @@ HttpResponse *parseHttpResponse(const char *const rawResponse) {
     response->statusCode = atoi(tempPtr);
     if (response->statusCode == 0) {
         printf("Invalid status code: %s\n", tempPtr);
+        httpResponseDestroy(response);
         return NULL;
     }
     // Parse status
     tempPtr = strtok(NULL, " "); 
     response->status= malloc(strlen(tempPtr) + 1);
-    if (response->status == NULL) return NULL;
+    if (response->status == NULL) {
+        httpResponseDestroy(response);
+        return NULL;
+    }
     strcpy(response->status, tempPtr);
 
 
@@ -274,7 +282,10 @@ HttpResponse *parseHttpResponse(const char *const rawResponse) {
     
     HttpHeaderList *headerList = constructHttpHeaderList(5);
     // Ensure that a valid list has been allocated
-    if (headerList == NULL) return NULL;
+    if (headerList == NULL) {
+        httpResponseDestroy(response);
+        return NULL;
+    }
 
     // Continue to parse as headers until reaches 
     // the first character of the response body
@@ -296,6 +307,7 @@ HttpResponse *parseHttpResponse(const char *const rawResponse) {
 
         // Add header to headerList
         if (!httpHeaderListAdd(headerList, tempKey, tempValue)) {
+            httpResponseDestroy(response);
             return NULL;
         }
     }
@@ -351,8 +363,31 @@ char *stringifyHttpRequest(HttpRequest *request) {
     return requestStr;
 }
 
-void freeHttpRequest(HttpRequest *request) {
-    free(request->url);
-    free(request->body);
-    free(request->headerList);
+
+// Frees all memory used by HttpRequest
+void httpRequestDestroy(HttpRequest *request) {
+    if (request != NULL) {
+        if (request->url != NULL)
+            free(request->url);
+        if (request->body != NULL)
+            free(request->body);
+        if (request->headerList != NULL)
+            httpHeaderListDestroy(request->headerList);
+        free(request);
+    }
+}
+
+
+// Frees all memory used by HttpResponse
+void httpResponseDestroy(HttpResponse *response) {
+    if (response != NULL) {
+        if (response->status != NULL)
+            free(response->status);
+        if (response->body != NULL)
+            free(response->body);
+        if (response->headerList != NULL)
+            httpHeaderListDestroy(response->headerList);
+        free(response);
+    }
+
 }

@@ -33,8 +33,8 @@ typedef struct {
 typedef struct {
     int statusCode;
     char *status;
-    HttpHeaderList *headerList;
     char *body;
+    HttpHeaderList *headerList;
 } HttpResponse;
 
 
@@ -67,5 +67,19 @@ bool httpHeaderListRemove(HttpHeaderList *list, char *key);
 // Checks if an HttpHeader with specified key exists in list
 bool httpHeaderListContainsHeader(HttpHeaderList *list, char *key);
 
+// Frees all memory used by HttpHeader
+void httpHeaderDestroy(HttpHeader *header);
+
+
+// Frees all memory used by HttpHeaderList
+void httpHeaderListDestroy(HttpHeaderList *list);
+
+
+// Frees all memory used by HttpResponse
+void httpResponseDestroy(HttpResponse *response);
+
+
+// Frees all memory used by HttpRequest
+void httpRequestDestroy(HttpRequest *request);
 
 #endif // !HTTP_H

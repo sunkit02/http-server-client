@@ -1,4 +1,5 @@
 #include <stdbool.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "../parsers.h"
@@ -27,11 +28,12 @@ int main(void) {
 
 bool canParseHttpResponseWithBody() {
     // Given
-    const char *const rawResponse = "HTTP/1.1 200 OK\r\n"
-                                    "key1: value1\r\n"
-                                    "key2: value2\r\n"
-                                    "key3: value3\r\n\r\n"
-                                    "<h1>This is the body!</h1>\r\n\r\n";
+    const char *const rawResponse = 
+        "HTTP/1.1 200 OK\r\n"
+        "key1: value1\r\n"
+        "key2: value2\r\n"
+        "key3: value3\r\n\r\n"
+        "<h1>This is the body!</h1>\r\n\r\n";
 
     int expectedStatusCode = 200;
     char *expectedStatus = "OK";
@@ -52,6 +54,7 @@ bool canParseHttpResponseWithBody() {
     if (response == NULL) {
         LOG_FAIL("Failed to parse http response.\n");
 
+        httpResponseDestroy(response);
         return false;
     }
 
@@ -60,6 +63,7 @@ bool canParseHttpResponseWithBody() {
         LOG_FAIL("Wrong status code. Expected: %d, Got: %d\n",
                  expectedStatusCode, response->statusCode);
 
+        httpResponseDestroy(response);
         return false;
     }
 
@@ -69,6 +73,7 @@ bool canParseHttpResponseWithBody() {
         LOG_FAIL("Wrong status. Expected: '%s', Got: '%s'\n",
                  expectedStatus, response->status);
 
+        httpResponseDestroy(response);
         return false;
     }
 
@@ -76,6 +81,7 @@ bool canParseHttpResponseWithBody() {
     if (response->headerList == NULL) {
         LOG_FAIL("Expected %zu headers. Got (null)\n", n);
 
+        httpResponseDestroy(response);
         return false;
     }
 
@@ -86,6 +92,7 @@ bool canParseHttpResponseWithBody() {
             LOG_FAIL("Expected header with key: '%s' not found\n", 
                      expectedKeys[i]);
 
+            httpResponseDestroy(response);
             return false;
         }
 
@@ -95,6 +102,7 @@ bool canParseHttpResponseWithBody() {
                      expectedKeys[i],
                      expectedValues[i], header->value);
 
+            httpResponseDestroy(response);
             return false;
         }
     }
@@ -113,19 +121,22 @@ bool canParseHttpResponseWithBody() {
                  "---------\n",
                  expectedBody, response->body);
 
+        httpResponseDestroy(response);
         return false;
     }
 
+    httpResponseDestroy(response);
     return true;
 }
 
 
 bool canParseHttpResponseWithoutBody() {
     // Given
-    const char *const rawResponse = "HTTP/1.1 200 OK\r\n"
-                                    "key1: value1\r\n"
-                                    "key2: value2\r\n"
-                                    "key3: value3\r\n\r\n";
+    const char *const rawResponse = 
+        "HTTP/1.1 200 OK\r\n"
+        "key1: value1\r\n"
+        "key2: value2\r\n"
+        "key3: value3\r\n\r\n";
 
     int expectedStatusCode = 200;
     char *expectedStatus = "OK";
@@ -146,6 +157,7 @@ bool canParseHttpResponseWithoutBody() {
     if (response == NULL) {
         LOG_FAIL("Failed to parse http response.\n");
 
+        httpResponseDestroy(response);
         return false;
     }
 
@@ -154,6 +166,7 @@ bool canParseHttpResponseWithoutBody() {
         LOG_FAIL("Wrong status code. Expected: %d, Got: %d\n",
                  expectedStatusCode, response->statusCode);
 
+        httpResponseDestroy(response);
         return false;
     }
 
@@ -163,6 +176,7 @@ bool canParseHttpResponseWithoutBody() {
         LOG_FAIL("Wrong status. Expected: '%s', Got: '%s'\n",
                  expectedStatus, response->status);
 
+        httpResponseDestroy(response);
         return false;
     }
 
@@ -170,6 +184,7 @@ bool canParseHttpResponseWithoutBody() {
     if (response->headerList == NULL) {
         LOG_FAIL("Expected %zu headers. Got (null)\n", n);
 
+        httpResponseDestroy(response);
         return false;
     }
 
@@ -180,6 +195,7 @@ bool canParseHttpResponseWithoutBody() {
             LOG_FAIL("Expected header with key: '%s' not found\n", 
                      expectedKeys[i]);
 
+            httpResponseDestroy(response);
             return false;
         }
 
@@ -189,6 +205,7 @@ bool canParseHttpResponseWithoutBody() {
                      expectedKeys[i],
                      expectedValues[i], header->value);
 
+            httpResponseDestroy(response);
             return false;
         }
     }
@@ -206,26 +223,30 @@ bool canParseHttpResponseWithoutBody() {
                  "---------\n",
                  expectedBody, response->body);
 
+        httpResponseDestroy(response);
         return false;
     }
 
+    httpResponseDestroy(response);
     return true;
 }
 
 
 bool canParseHttpRequestWithBody() {
     // Given
-    char *rawRequest = "POST /post-data HTTP/1.1\r\n"
-                       "key1: value1\r\n"
-                       "key2: value2\r\n"
-                       "key3: value3\r\n\r\n"
-                       "{\"name\": \"Eunice\", \"age\": 20}\r\n"
-                       "{\"name\": \"Sun Kit\", \"age\": 21}\r\n\r\n";
+    char *rawRequest = 
+        "POST /post-data HTTP/1.1\r\n"
+        "key1: value1\r\n"
+        "key2: value2\r\n"
+        "key3: value3\r\n\r\n"
+        "{\"name\": \"Eunice\", \"age\": 20}\r\n"
+        "{\"name\": \"Sun Kit\", \"age\": 21}\r\n\r\n";
 
     HttpMethods expectedMethod = POST;
     char *expectedUrl = "/post-data";
-    char *expectedBody = "{\"name\": \"Eunice\", \"age\": 20}\r\n"
-                         "{\"name\": \"Sun Kit\", \"age\": 21}";
+    char *expectedBody = 
+        "{\"name\": \"Eunice\", \"age\": 20}\r\n"
+        "{\"name\": \"Sun Kit\", \"age\": 21}";
 
     HttpHeader expectedHeaders[] = {
         {.key = "key1", .value = "value1"},
@@ -245,6 +266,7 @@ bool canParseHttpRequestWithBody() {
     if (request == NULL) {
         LOG_FAIL("Failed to parse http request.\n");
 
+        httpRequestDestroy(request);
         return false;
     }
 
@@ -253,6 +275,7 @@ bool canParseHttpRequestWithBody() {
         LOG_FAIL("Wrong method. Expected: %d, Got: %d\n",
                  expectedMethod, request->method);
 
+        httpRequestDestroy(request);
         return false;
     } 
 
@@ -261,6 +284,7 @@ bool canParseHttpRequestWithBody() {
         LOG_FAIL("Wrong url. Expected: '%s', Got: '%s'\n",
                  expectedUrl, request->url);
 
+        httpRequestDestroy(request);
         return false;
     }
 
@@ -277,7 +301,8 @@ bool canParseHttpRequestWithBody() {
                  "%s\n"
                  "---------\n",
                  expectedBody, request->body);
-        
+
+        httpRequestDestroy(request);
         return false;
     }
 
@@ -287,6 +312,7 @@ bool canParseHttpRequestWithBody() {
         if (header == NULL) {
             LOG_FAIL("Missing header with key: '%s'\n", expectedHeaders[i].key);
 
+            httpRequestDestroy(request);
             return false;
         }
 
@@ -297,21 +323,24 @@ bool canParseHttpRequestWithBody() {
                      expectedHeaders[i].key, expectedHeaders[i].value,
                      header->key, header->value);
 
+            httpRequestDestroy(request);
             return false;
         }
     }
 
     // Return true if all checks have passed
+    httpRequestDestroy(request);
     return true;
 }
 
 
 bool canParseHttpRequestWithoutBody() {
     // Given
-    char *rawRequest = "POST /post-data HTTP/1.1\r\n"
-                       "key1: value1\r\n"
-                       "key2: value2\r\n"
-                       "key3: value3\r\n\r\n";
+    char *rawRequest = 
+        "POST /post-data HTTP/1.1\r\n"
+        "key1: value1\r\n"
+        "key2: value2\r\n"
+        "key3: value3\r\n\r\n";
 
     HttpMethods expectedMethod = POST;
     char *expectedUrl = "/post-data";
@@ -327,8 +356,6 @@ bool canParseHttpRequestWithoutBody() {
 
     // When
     HttpRequest *request = parseHttpRequest(rawRequest);
-    // if (request->body == NULL) puts("True");
-    // else puts("False");
 
 
     // Then
@@ -337,6 +364,7 @@ bool canParseHttpRequestWithoutBody() {
     if (request == NULL) {
         LOG_FAIL("Failed to parse http request.\n");
 
+        httpRequestDestroy(request);
         return false;
     }
 
@@ -345,6 +373,7 @@ bool canParseHttpRequestWithoutBody() {
         LOG_FAIL("Wrong method. Expected: %d, Got: %d\n",
                  expectedMethod, request->method);
 
+        httpRequestDestroy(request);
         return false;
     } 
 
@@ -353,6 +382,7 @@ bool canParseHttpRequestWithoutBody() {
         LOG_FAIL("Wrong url. Expected: '%s', Got: '%s'\n",
                  expectedUrl, request->url);
 
+        httpRequestDestroy(request);
         return false;
     }
 
@@ -368,7 +398,8 @@ bool canParseHttpRequestWithoutBody() {
                  "%s\n"
                  "---------\n",
                  expectedBody, request->body);
-        
+
+        httpRequestDestroy(request);
         return false;
     }
 
@@ -378,6 +409,7 @@ bool canParseHttpRequestWithoutBody() {
         if (header == NULL) {
             LOG_FAIL("Missing header with key: '%s'\n", expectedHeaders[i].key);
 
+            httpRequestDestroy(request);
             return false;
         }
 
@@ -388,11 +420,13 @@ bool canParseHttpRequestWithoutBody() {
                      expectedHeaders[i].key, expectedHeaders[i].value,
                      header->key, header->value);
 
+            httpRequestDestroy(request);
             return false;
         }
     }
 
     // Return true if all checks have passed
+    httpRequestDestroy(request);
     return true;
 }
 
@@ -435,12 +469,13 @@ bool canStringifyHttpRequest() {
                  expectedStringifiedRequest,
                  stringifiedRequest); 
 
+        httpHeaderListDestroy(headerList);
+        free(stringifiedRequest);
         return false;
     }
 
     // Free dynamically allocated memory
+    httpHeaderListDestroy(headerList);
     free(stringifiedRequest);
-
     return true;
 }
-
