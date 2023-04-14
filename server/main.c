@@ -2,7 +2,7 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include "server.h"
-#include "../utils/parsers.h"
+#include "../lib/parsers.h"
 
 
 // Objects created for handleKeyBoardInterrupt() to access

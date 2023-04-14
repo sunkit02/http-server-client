@@ -9,7 +9,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include "../utils/http.h"
+#include "../lib/http.h"
 
 
 typedef struct {

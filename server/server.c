@@ -2,7 +2,7 @@
 #include <sys/types.h>
 
 #include "server.h"
-#include "../utils/parsers.h"
+#include "../lib/parsers.h"
 
 Server constructServer(int port, int backlog, EndpointList *endpointList, 
                        void (*launch)(Server *server)) {

@@ -62,11 +62,11 @@ $(BUILD_DIR)/server.o: server.c
 	@echo Compiling $@...
 	@$(CC) $(FLAGS) -c $< -o $@ 
 
-$(BUILD_DIR)/httpheader_list.o: ../utils/httpheader_list.c 
+$(BUILD_DIR)/httpheader_list.o: ../lib/httpheader_list.c 
 	@echo Compiling $@...
 	@$(CC) $(FLAGS) -c $< -o $@ 
 
-$(BUILD_DIR)/parsers.o: ../utils/parsers.c 
+$(BUILD_DIR)/parsers.o: ../lib/parsers.c 
 	@echo Compiling $@...
 	@$(CC) $(FLAGS) -c $< -o $@ 
 

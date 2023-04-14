@@ -4,7 +4,7 @@
 #include <signal.h>
 
 #include "server.h"
-#include "../utils/parsers.h"
+#include "../lib/parsers.h"
 
 
 #define LISTENING_PORT 9001
