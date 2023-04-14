@@ -4,9 +4,10 @@
 #include <sys/types.h>
 
 #include "client.h"
-#include "../utils/parsers.h"
+#include "../lib/parsers.h"
 
 
+///////////////////////////// DEPRECATED /////////////////////////////
 // Starts running the client by connecting to the server through 
 // the socket passed in by the Client struct.
 // Returns true if the connection was successfully established
@@ -25,10 +26,36 @@ static bool launch(Client *client) {
     return true;
 }
 
+
+static bool connectToServer(Client *client) {
+    // Create socket
+    client->socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (client->socket == -1) {
+        puts("Failed to create socket...");
+        return NULL;
+    }
+
+    // Establish connection with server
+    int connectionFailed = connect(client->socket,
+                                   (struct sockaddr *) &client->address,
+                                   sizeof(client->address));
+    
+    if (connectionFailed) {
+        puts("Failed to connect to socket...");
+        return false;
+    }
+    puts("Connected to socket");
+
+    return true;
+}
+
 // Sends an HTTP request synchronously and returns an HttpResponse
 // struct that contains the HTTP response from the server
 static HttpResponse *sendRequest(Client *client, HttpRequest *request) {
+    connectToServer(client);
+
     HttpResponse *response = malloc(sizeof(HttpResponse));
+    if (response == NULL) return NULL;
 
     char *requestString = stringifyHttpRequest(request);
 
@@ -37,11 +64,16 @@ static HttpResponse *sendRequest(Client *client, HttpRequest *request) {
     send(client->socket, requestString, strlen(requestString) + 1, 0);
     recv(client->socket, &responseBuffer, sizeof(responseBuffer), 0);
 
+    // Close socket after each request
+    shutdown(client->socket, SHUT_RDWR);
+    close(client->socket);
+
     response = parseHttpResponse(responseBuffer);
 
     return response;
 }
 
+///////////////////////////// DEPRECATED /////////////////////////////
 // Stops the client from running by closing down the socket
 static void stop(Client *client) {
     puts("Closing client socket...");
@@ -65,14 +97,11 @@ Client *constructHttpClient(char *serverIpAddress, int port) {
     client->address.sin_port = htons(port);
     client->address.sin_addr.s_addr = inet_addr(serverIpAddress);
 
-    client->socket = socket(AF_INET, SOCK_STREAM, 0);
-    if (client->socket == -1) {
-        puts("Failed to create socket...");
-        return NULL;
-    }
-
-    client->launch = launch;
     client->sendRequest = sendRequest;
+
+    // DEPRECATED
+    client->launch = launch;
+    // DEPRECATED
     client->stop = stop;
 
     return client;
