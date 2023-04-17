@@ -14,10 +14,12 @@ bool canParseHttpResponseWithoutBody();
 bool canParseHttpRequestWithBody();
 bool canParseHttpRequestWithoutBody();
 bool canStringifyHttpRequest();
+bool canStringifyHttpResponse();
 
 
 int main(void) {
     runTest("canStringifyHttpRequest", canStringifyHttpRequest);
+    runTest("canStringifyHttpResponse", canStringifyHttpResponse);
     runTest("canParseHttpResponseWithBody", canParseHttpResponseWithBody);
     runTest("canParseHttpResponseWithoutBody", canParseHttpResponseWithoutBody);
     runTest("canParseHttpRequestWithBody", canParseHttpRequestWithBody);
@@ -435,15 +437,14 @@ bool canStringifyHttpRequest() {
     // Given
     // Initialize test request
     HttpHeaderList *headerList = constructHttpHeaderList(5);
-    HttpRequest request;
-    request.method = GET;
-    request.url = "/data";
-    request.headerList = headerList;
-    request.body = "{\"name\": \"Sun Kit\"}";
-
     httpHeaderListAdd(headerList, "Key1", "Value1");
     httpHeaderListAdd(headerList, "Key2", "Value2");
     httpHeaderListAdd(headerList, "Key3", "Value3");
+
+    char *expectedBody = "{\"name\": \"Sun Kit\"}";
+
+    HttpRequest *request = 
+        constructHttpRequest(GET, "/data", headerList, expectedBody);
 
     char *expectedStringifiedRequest = 
         "GET /data HTTP/1.1\r\n"
@@ -455,7 +456,7 @@ bool canStringifyHttpRequest() {
 
 
     // When
-    char *stringifiedRequest = stringifyHttpRequest(&request);
+    char *stringifiedRequest = stringifyHttpRequest(request);
 
 
     // Then
@@ -477,5 +478,62 @@ bool canStringifyHttpRequest() {
     // Free dynamically allocated memory
     httpHeaderListDestroy(headerList);
     free(stringifiedRequest);
+    return true;
+}
+
+
+
+bool canStringifyHttpResponse() {
+    // Given
+    // Initialize test request
+    HttpHeaderList *headerList = constructHttpHeaderList(5);
+    // HttpResponse response;
+    // response.statusCode = 200;
+    // response.status = "OK";
+    // response.headerList = headerList;
+    // response.body = "{\"name\": \"Sun Kit\"}";
+
+    httpHeaderListAdd(headerList, "Key1", "Value1");
+    httpHeaderListAdd(headerList, "Key2", "Value2");
+    httpHeaderListAdd(headerList, "Key3", "Value3");
+
+    char *expectedBody = "{\"name\": \"Sun Kit\"}";
+
+    HttpResponse *response = constructHttpResponse(200, headerList, expectedBody);
+
+    char *expectedStringifiedResponse = 
+        "HTTP/1.1 200 OK\r\n"
+        "Key1:Value1\r\n"
+        "Key2:Value2\r\n"
+        "Key3:Value3\r\n"
+        "\r\n"
+        "{\"name\": \"Sun Kit\"}\r\n";
+
+
+    // When
+    char *stringifiedResponse = stringifyHttpResponse(response);
+
+
+    // Then
+    // Check for the correct stringified request
+    if (strcmp(expectedStringifiedResponse, stringifiedResponse) != 0) {
+        LOG_FAIL("Wrong stringified response\n"
+                 "Expected:\n"
+                 "%s\n"
+                 "--------\n"
+                 "Got:\n"
+                 "%s\n"
+                 "--------\n",
+                 expectedStringifiedResponse,
+                 stringifiedResponse); 
+
+        httpHeaderListDestroy(headerList);
+        free(stringifiedResponse);
+        return false;
+    }
+
+    // Free dynamically allocated memory
+    httpHeaderListDestroy(headerList);
+    free(stringifiedResponse);
     return true;
 }

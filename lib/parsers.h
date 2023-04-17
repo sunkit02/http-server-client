@@ -39,9 +39,15 @@ const char *findBodyStart(const char *const rawRequest);
 HttpRequest *parseHttpRequest(const char *const rawRequest);
 
 
-// Takes in an HttpRequest struct and returns a stringified
-// representation of that HttpRequest
+// Returns a stringified representation of an HTTP request.
+// Returns NULL if any essential fields are NULL (i.e. url)
+// The returned string needs to be manually freed.
 char *stringifyHttpRequest(HttpRequest *request);
+
+// Returns a stringified representation of an HTTP response.
+// Returns NULL if any essential fields are NULL
+// The returned string needs to be manually freed.
+char *stringifyHttpResponse(HttpResponse *response);
 
 
 // Takes in the raw HTTP response string and returns a pointer to an

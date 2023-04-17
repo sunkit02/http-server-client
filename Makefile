@@ -25,7 +25,7 @@ test: build_tests
 build_tests: create_test_dir  parsers_test httpheader_list_test
 
 .PHONY: parsers_test
-parsers_test: lib/test/parsers_test.c lib/parsers.c lib/httpheader_list.c lib/test/test_utils.c
+parsers_test: lib/test/parsers_test.c lib/parsers.c lib/httpheader_list.c lib/test/test_utils.c lib/http_utils.c
 	@echo "Compiling parsers_test..."
 	@$(CC) $(FLAGS) $^ -o $(LIB_TEST_BUILD_DIR)/$@
 	@echo Adding link to tests dir in root...

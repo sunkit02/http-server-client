@@ -319,10 +319,10 @@ HttpResponse *parseHttpResponse(const char *const rawResponse) {
 }
 
 // Returns a stringified representation of an HTTP request.
-// Returns NULL if any essential fields are NULL (i.e. url)
+// Returns NULL if any essential fields are NULL (i.e. url).
 // The returned string needs to be manually freed.
 char *stringifyHttpRequest(HttpRequest *request) {
-    // TODO: Make buffer dynamically sized
+    // TODO: implement resizing when requestStr and tempBuffer run out of space
     char *requestStr = calloc(1024, sizeof(char));
     char *tempBuffer = calloc(1024, sizeof(char));
 
@@ -345,8 +345,8 @@ char *stringifyHttpRequest(HttpRequest *request) {
     if (request->headerList != NULL) {
         for (size_t i = 0; i < request->headerList->size; i++) {
             HttpHeader *header = request->headerList->headers[i];
-            sprintf(tempBuffer, 
-                    "%s:%s\r\n", header->key, header->value);
+            sprintf(tempBuffer, "%s:%s\r\n",
+                    header->key, header->value);
             strcat(requestStr, tempBuffer);
         }
         // End of headers
@@ -361,6 +361,43 @@ char *stringifyHttpRequest(HttpRequest *request) {
 
     free(tempBuffer);
     return requestStr;
+}
+
+char *stringifyHttpResponse(HttpResponse *response) {
+    // TODO: implement resizing when responseStr and tempBuffer run out of space
+    char *responseStr = calloc(1024, sizeof(char));
+    char *tempBuffer = calloc(1024, sizeof(char));
+
+    // HTTP version
+    strcat(responseStr, "HTTP/1.1 ");
+
+    // Status code
+    sprintf(tempBuffer, "%d ", response->statusCode);
+    strcat(responseStr, tempBuffer);
+
+    // Status
+    strcat(responseStr, response->status);
+    strcat(responseStr, "\r\n");
+
+    // Headers
+    if (response->headerList != NULL) {
+        for (size_t i = 0; i < response->headerList->size; i++) {
+            HttpHeader *header = response->headerList->headers[i];
+            sprintf(tempBuffer, "%s:%s\r\n", 
+                    header->key, header->value);
+            strcat(responseStr, tempBuffer);
+        }
+        // End of headres
+        strcat(responseStr, "\r\n");
+    }
+
+    if (response->body != NULL) {
+        strcat(responseStr, response->body);
+        strcat(responseStr, "\r\n");
+    }
+
+    free(tempBuffer);
+    return responseStr;
 }
 
 
@@ -389,5 +426,4 @@ void httpResponseDestroy(HttpResponse *response) {
             httpHeaderListDestroy(response->headerList);
         free(response);
     }
-
 }
