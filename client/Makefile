@@ -26,7 +26,7 @@ build: build-lib build-client
 build-client: main.c $(BUILD_DIR)/client.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/httpheader_list.o
 	@echo Compiling and linking client executable...
 	@$(CC) $(FLAGS) $^ -o $(BUILD_DIR)/$(BUILD_TARGET)
-	@echo Built server successfully!
+	@echo Built client successfully!
 
 
 .PHONY: build-lib

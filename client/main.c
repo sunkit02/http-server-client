@@ -30,22 +30,32 @@ int main(void) {
     request.method = GET;
     request.body = NULL;
 
-    puts("Sending request");
+    printf("sizeof(HttpResponse)=%zu\n", sizeof(HttpResponse));
+
+    puts("Sending request 1");
     HttpResponse *response = client->sendRequest(client, &request);
     printf("\n\nHttpResponse(status=%d, headers=%s, body=%s)\n\n",
                 response->statusCode, (char *)NULL, response->body);
-    puts("Request sent");
 
-    puts("Sending request2");
+    httpResponseDestroy(response);
+
+
+    puts("Sending request 2");
     request.url = "/data";
     response = client->sendRequest(client, &request);
     printf("\n\nHttpResponse(status=%d, headers=%s, body=%s)\n\n",
                 response->statusCode, (char *)NULL, response->body);
 
+    httpResponseDestroy(response);
 
+
+    puts("Sending request 3");
     char newUrl[] = "/";
     request.url = newUrl;
     response = client->sendRequest(client, &request);
     printf("\n\nHttpResponse(status=%d, headers=%s, body=%s)\n\n",
                 response->statusCode, (char *)NULL, response->body);
+
+    httpResponseDestroy(response);
+    free(client);
 }

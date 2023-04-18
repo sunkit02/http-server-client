@@ -234,7 +234,7 @@ HttpResponse *parseHttpResponse(const char *const rawResponse) {
     const char *headersEndPtr = NULL; // holds pointer to end of headers section
 
     // Copy rawResponse into a buffer to avoid mutating original string
-    char responseCopy[strlen(rawResponse) + 1];
+    char *responseCopy = malloc(strlen(rawResponse) + 1);
     strcpy(responseCopy, rawResponse);
 
     // Get the starting point of the body as reference
@@ -315,6 +315,7 @@ HttpResponse *parseHttpResponse(const char *const rawResponse) {
     // Assign headerlist to response
     response->headerList = headerList;
 
+    free(responseCopy);
     return response;
 }
 
@@ -387,9 +388,9 @@ char *stringifyHttpResponse(HttpResponse *response) {
                     header->key, header->value);
             strcat(responseStr, tempBuffer);
         }
-        // End of headres
-        strcat(responseStr, "\r\n");
     }
+    // End of headers
+    strcat(responseStr, "\r\n");
 
     if (response->body != NULL) {
         strcat(responseStr, response->body);
@@ -424,6 +425,6 @@ void httpResponseDestroy(HttpResponse *response) {
             free(response->body);
         if (response->headerList != NULL)
             httpHeaderListDestroy(response->headerList);
-        free(response);
     }
+    free(response);
 }

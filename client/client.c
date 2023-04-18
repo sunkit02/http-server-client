@@ -32,7 +32,7 @@ static bool connectToServer(Client *client) {
     client->socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client->socket == -1) {
         puts("Failed to create socket...");
-        return NULL;
+        return false;
     }
 
     // Establish connection with server
@@ -44,7 +44,6 @@ static bool connectToServer(Client *client) {
         puts("Failed to connect to socket...");
         return false;
     }
-    puts("Connected to socket");
 
     return true;
 }
@@ -52,10 +51,7 @@ static bool connectToServer(Client *client) {
 // Sends an HTTP request synchronously and returns an HttpResponse
 // struct that contains the HTTP response from the server
 static HttpResponse *sendRequest(Client *client, HttpRequest *request) {
-    connectToServer(client);
-
-    HttpResponse *response = malloc(sizeof(HttpResponse));
-    if (response == NULL) return NULL;
+    if (!connectToServer(client)) return NULL;
 
     char *requestString = stringifyHttpRequest(request);
 
@@ -67,8 +63,11 @@ static HttpResponse *sendRequest(Client *client, HttpRequest *request) {
     // Close socket after each request
     shutdown(client->socket, SHUT_RDWR);
     close(client->socket);
+    // Free requestString
+    free(requestString);
 
-    response = parseHttpResponse(responseBuffer);
+    HttpResponse *response = parseHttpResponse(responseBuffer);
+    if (response == NULL) return NULL;
 
     return response;
 }
@@ -87,9 +86,9 @@ static void stop(Client *client) {
 Client *constructHttpClient(char *serverIpAddress, int port) {
     Client *client = malloc(sizeof(Client));
 
-    client->domain = AF_INET;
-    client->service = SOCK_STREAM;
-    client->protocol = 0;
+    client->domain = AF_INET; // DEPRECATED
+    client->service = SOCK_STREAM; // DEPRECATED
+    client->protocol = 0; // DEPRECATED
     client->serverIpAddress = serverIpAddress;
     client->port = port;
 

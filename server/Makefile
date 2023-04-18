@@ -13,7 +13,7 @@ TEST_LINK_DIR=../tests
 all: build test run
 
 .PHONY: test
-test: build-lib create_test_dir $(TEST_BUILD_DIR)/$(TEST_NAME)
+test: build_lib create_test_dir $(TEST_BUILD_DIR)/$(TEST_NAME)
 	@echo Running server tests...
 	@printf "\n\n"
 	@$(TEST_BUILD_DIR)/$(TEST_NAME)
@@ -21,7 +21,7 @@ test: build-lib create_test_dir $(TEST_BUILD_DIR)/$(TEST_NAME)
 	@echo All tests passed!
 
 .PHONY: build
-build: build-lib build-server create_test_dir $(TEST_BUILD_DIR)/$(TEST_NAME)
+build: build_lib build_server create_test_dir $(TEST_BUILD_DIR)/$(TEST_NAME)
 
 # TODO: Figure out why servertest.c cannot be replaced with $(TEST_NAME)
 $(TEST_BUILD_DIR)/$(TEST_NAME): servertest.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o $(BUILD_DIR)/httpheader_list.o
@@ -45,16 +45,16 @@ run: build
 	@$(BUILD_DIR)/$(BUILD_TARGET)
 
 
-.PHONY: build-server
-build-server: main.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o $(BUILD_DIR)/httpheader_list.o
+.PHONY: build_server
+build_server: main.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o $(BUILD_DIR)/httpheader_list.o $(BUILD_DIR)/http_utils.o
 	@echo Compiling and linking server executable...
 	@$(CC) $(FLAGS) $^ -o $(BUILD_DIR)/$(BUILD_TARGET)
 	@echo Built server successfully!
 	@echo
 
 
-.PHONY: build-lib
-build-lib: create_build_dir $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o $(BUILD_DIR)/httpheader_list.o
+.PHONY: build_lib
+build_lib: create_build_dir $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o $(BUILD_DIR)/httpheader_list.o $(BUILD_DIR)/http_utils.o
 	@echo Library built successfully!
 	@echo
 
@@ -74,6 +74,9 @@ $(BUILD_DIR)/endpointlist.o: datastructures/endpointlist.c
 	@echo Compiling $@...
 	@$(CC) $(FLAGS) -c $< -o $@ 
 
+$(BUILD_DIR)/http_utils.o: ../lib/http_utils.c
+	@echo Compiling $@...
+	@$(CC) $(FLAGS) -c $< -o $@ 
 
 create_build_dir: 
 	@mkdir -p $(BUILD_DIR)
@@ -85,6 +88,3 @@ clean:
 	@rm -rf $(BUILD_DIR) $(TEST_BUILD_DIR)
 	@echo Removing server test and links...
 	@if [ -f $(TEST_LINK_DIR)/$(TEST_NAME) ]; then rm $(TEST_LINK_DIR)/$(TEST_NAME); fi
-
-
-	
