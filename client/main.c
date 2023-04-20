@@ -34,28 +34,34 @@ int main(void) {
 
     puts("Sending request 1");
     HttpResponse *response = client->sendRequest(client, &request);
-    printf("\n\nHttpResponse(status=%d, headers=%s, body=%s)\n\n",
-                response->statusCode, (char *)NULL, response->body);
+    if (response) {
+        printf("\n\nHttpResponse(status=%d, headers=%s, body=%s)\n\n",
+               response->statusCode, (char *)NULL, response->body);
 
-    httpResponseDestroy(response);
+        httpResponseDestroy(response);
+    }
 
 
     puts("Sending request 2");
     request.url = "/data";
     response = client->sendRequest(client, &request);
-    printf("\n\nHttpResponse(status=%d, headers=%s, body=%s)\n\n",
-                response->statusCode, (char *)NULL, response->body);
+    if (response) {
+        printf("\n\nHttpResponse(status=%d, headers=%s, body=%s)\n\n",
+               response->statusCode, (char *)NULL, response->body);
 
-    httpResponseDestroy(response);
+        httpResponseDestroy(response);
+    }
 
 
     puts("Sending request 3");
     char newUrl[] = "/";
     request.url = newUrl;
     response = client->sendRequest(client, &request);
-    printf("\n\nHttpResponse(status=%d, headers=%s, body=%s)\n\n",
-                response->statusCode, (char *)NULL, response->body);
+    if (response) {
+        printf("\n\nHttpResponse(status=%d, headers=%s, body=%s)\n\n",
+               response->statusCode, (char *)NULL, response->body);
 
-    httpResponseDestroy(response);
+        httpResponseDestroy(response);
+    }
     free(client);
 }
