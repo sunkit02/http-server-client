@@ -1,5 +1,5 @@
-CC=gcc # C compiler
-FLAGS=-g -ggdb
+CC=clang # C compiler
+FLAGS=-g -O0
 
 BUILD_DIR=build
 BUILD_TARGET=simple_client # Name of build executable
@@ -18,19 +18,33 @@ run: build
 	@$(BUILD_DIR)/$(BUILD_TARGET)
 
 
+.PHONY: test
+test: create_test_build_dir create_build_dir build_lib build_test
+	@echo
+	@echo Running client test...
+	@$(TEST_BUILD_DIR)/$(TEST_NAME)
+	@echo
+	@echo Test run successfully!
+
+
 .PHONY: build
-build: build-lib build-client
+build: create_build_dir create_test_build_dir build_lib build_test build-client
+
+.PHONY: build_test
+build_test: client_test.c $(BUILD_DIR)/client.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/httpheader_list.o $(BUILD_DIR)/http_utils.o
+	@echo Compiling and linking client test...
+	@$(CC) $(FLAGS) $^ -o $(TEST_BUILD_DIR)/$(TEST_NAME)
+	@echo Built client test successfully!
 
 
 .PHONY: build-client
-build-client: main.c $(BUILD_DIR)/client.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/httpheader_list.o
+build-client: main.c $(BUILD_DIR)/client.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/httpheader_list.o $(BUILD_DIR)/http_utils.o
 	@echo Compiling and linking client executable...
 	@$(CC) $(FLAGS) $^ -o $(BUILD_DIR)/$(BUILD_TARGET)
 	@echo Built client successfully!
 
-
-.PHONY: build-lib
-build-lib: create_build_dir $(BUILD_DIR)/client.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/httpheader_list.o
+.PHONY: build_lib
+build_lib: create_build_dir $(BUILD_DIR)/client.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/httpheader_list.o $(BUILD_DIR)/http_utils.o
 	@echo Library built successfully!
 	 
 $(BUILD_DIR)/client.o: client.c
@@ -41,19 +55,23 @@ $(BUILD_DIR)/httpheader_list.o: ../lib/httpheader_list.c
 	@echo Compiling $@...
 	@$(CC) $(FLAGS) -c $< -o $@ 
 
+$(BUILD_DIR)/http_utils.o: ../lib/http_utils.c
+	@echo Compiling $@...
+	@$(CC) $(FLAGS) -c $< -o $@ 
+
 $(BUILD_DIR)/parsers.o: ../lib/parsers.c 
 	@echo Compiling $@...
 	@$(CC) $(FLAGS) -c $< -o $@ 
 
+
 create_build_dir:
 	@mkdir -p $(BUILD_DIR)
 
-
-.PHONY: test
-test:
-	@echo Running client tests...
+create_test_build_dir:
+	@mkdir -p $(TEST_BUILD_DIR)
 
 .PHONY: clean
 clean: 
 	@echo Removing object files and executables...
-	@rm -rf build/
+	@rm -rf $(BUILD_DIR)
+	@rm -rf $(TEST_BUILD_DIR)
