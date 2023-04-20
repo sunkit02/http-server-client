@@ -1,6 +1,8 @@
 #include "client.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -14,54 +16,38 @@ int main(void) {
         puts("Failed to construct client");
         return 1;
     }
-    puts("Cosntructed Client");
+    puts("Constructed Client");
 
-    // if (client->launch(client) == false) {
-    //     puts("Failed to client server...");
-    //     return 1;
-    // }
+    bool keepRunning = true;
+    char input = 0;
 
-    puts("launched client");
+    HttpRequest *request;
+    HttpResponse *response;
+    while (keepRunning) {
+        printf("\nSend request [y/r/n]? ");
+        input = getchar();
+        getchar();
 
+        if (input == 'y') {
+            request = constructHttpRequest(GET, "/", NULL, NULL);
+            response = client->sendRequest(client, request);
 
-    HttpRequest request;
-    request.url = "/";
-    request.headerList = NULL;
-    request.method = GET;
-    request.body = NULL;
+            printf("Response: %s\n\n", response->body);
+            httpRequestDestroy(request);
+            httpResponseDestroy(response);
+        } else if (input == 'r') {
+            request = constructHttpRequest(GET, "/reset", NULL, NULL);
+            response = client->sendRequest(client, request);
 
-    printf("sizeof(HttpResponse)=%zu\n", sizeof(HttpResponse));
+            printf("Response: %s\n\n", response->body);
+            httpRequestDestroy(request);
+            httpResponseDestroy(response);
+        } else {
+            puts("\nExiting...");
+            break;
+        }
 
-    puts("Sending request 1");
-    HttpResponse *response = client->sendRequest(client, &request);
-    if (response) {
-        printf("\n\nHttpResponse(status=%d, headers=%s, body=%s)\n\n",
-               response->statusCode, (char *)NULL, response->body);
-
-        httpResponseDestroy(response);
     }
 
-
-    puts("Sending request 2");
-    request.url = "/data";
-    response = client->sendRequest(client, &request);
-    if (response) {
-        printf("\n\nHttpResponse(status=%d, headers=%s, body=%s)\n\n",
-               response->statusCode, (char *)NULL, response->body);
-
-        httpResponseDestroy(response);
-    }
-
-
-    puts("Sending request 3");
-    char newUrl[] = "/";
-    request.url = newUrl;
-    response = client->sendRequest(client, &request);
-    if (response) {
-        printf("\n\nHttpResponse(status=%d, headers=%s, body=%s)\n\n",
-               response->statusCode, (char *)NULL, response->body);
-
-        httpResponseDestroy(response);
-    }
-    free(client);
+    destroyHttpClient(client);
 }
