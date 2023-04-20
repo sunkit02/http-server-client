@@ -73,9 +73,7 @@ HttpResponse *constructHttpResponse(int statusCode,
         }
     }
 
-    if (headerList != NULL) {
-        response->headerList = headerList;
-    }
+    response->headerList = headerList;
 
     return response;
 }

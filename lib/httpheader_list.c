@@ -13,7 +13,10 @@ HttpHeaderList *constructHttpHeaderList(size_t capacity) {
     list->capacity = capacity;
     list->headers = malloc(capacity * sizeof(HttpHeader *));
 
-    if (list->headers == NULL) return NULL;
+    if (list->headers == NULL) {
+        free(list);
+        return NULL;
+    }
 
     return list;
 }
