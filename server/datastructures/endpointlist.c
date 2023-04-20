@@ -10,7 +10,7 @@
 static bool resizeEndpointList(EndpointList *list) {
     // Double capacity
     list->capacity *= 2;
-    HttpEndPoint *temp = realloc(list->endpoints, list->capacity);
+    HttpEndPoint **temp = realloc(list->endpoints, list->capacity);
     // Ensure the reallocation was successful
     if (temp == NULL) return false;
 
@@ -21,7 +21,6 @@ static bool resizeEndpointList(EndpointList *list) {
 static void addMethodSupportToEndpoint(HttpEndPoint *endpoint,
                                        HttpMethods method,
                                        void (*callback)(int clientSocket, HttpRequest *request)) {
-    printf("Adding support for method=%d to endpoint='%s'\n", method, endpoint->url);
 
     // Add method and callback to endpoint
     endpoint->callbacks[method] = callback;
@@ -31,8 +30,11 @@ static void addMethodSupportToEndpoint(HttpEndPoint *endpoint,
 EndpointList *constructEndpointList(size_t capacity) {
     EndpointList *endpointList = malloc(sizeof(EndpointList));
 
-    endpointList->endpoints = calloc(capacity, sizeof(HttpEndPoint));
-    if (endpointList->endpoints == NULL) return NULL;
+    endpointList->endpoints = malloc(capacity * sizeof(HttpEndPoint *));
+    if (endpointList->endpoints == NULL) {
+        free(endpointList);
+        return NULL;
+    }
 
     endpointList->size = 0;
     endpointList->capacity = capacity;
@@ -52,13 +54,13 @@ bool registerEndpoint(EndpointList *list,
 
     printf("Registering endpoint for url='%s', method=%d\n", url, httpMethod);
 
-    HttpEndPoint *endpoints = list->endpoints;
+    HttpEndPoint **endpoints = list->endpoints;
 
     bool containsUrl = false;
     for (size_t i = 0; i < list->size; i++) {
         // Check if endpoint has been registered
-        if (strcmp(endpoints[i].url, url) == 0) {
-            addMethodSupportToEndpoint(&endpoints[i], httpMethod, callback);
+        if (strcmp(endpoints[i]->url, url) == 0) {
+            addMethodSupportToEndpoint(endpoints[i], httpMethod, callback);
             return true;
         }
     }
@@ -77,13 +79,16 @@ bool registerEndpoint(EndpointList *list,
     }
 
     // Copy url to another memory location in case original pointer gets freed
-    char *tempUrl = malloc(strlen(url) + 1);
-    strcpy(tempUrl, url); endpoint->url = tempUrl;
+    endpoint->url = malloc(strlen(url) + 1);
+    if (endpoint->url == NULL) {
+        free(endpoint);
+        return false;
+    }
+    strcpy(endpoint->url, url); 
 
     addMethodSupportToEndpoint(endpoint, httpMethod, callback);
 
-    list->endpoints[list->size] = *endpoint;
-    list->size++;
+    list->endpoints[list->size++] = endpoint;
     return true;
 }
 
@@ -95,33 +100,45 @@ void freeEndpoint(EndpointList *list,char *url, HttpMethods httpMethod);
 
 // Print endpoint list
 void printEndpointList(EndpointList *list) {
-    HttpEndPoint *endpoints = list->endpoints;
+    HttpEndPoint **endpoints = list->endpoints;
     printf("[");
     for (size_t i = 0; i < list->size; i++) {
         char methodsStr[10];
         size_t j = 0;
         methodsStr[j++] = '[';
-        if (endpoints[i].callbacks[GET] != NULL) {
+        if (endpoints[i]->callbacks[GET] != NULL) {
             methodsStr[j++] = 'G';
             methodsStr[j++] = ',';
         }
-        if (endpoints[i].callbacks[POST] != NULL) {
+        if (endpoints[i]->callbacks[POST] != NULL) {
             methodsStr[j++] = 'P';
             methodsStr[j++] = ',';
         }
-        if (endpoints[i].callbacks[PUT] != NULL) {
+        if (endpoints[i]->callbacks[PUT] != NULL) {
             methodsStr[j++] = 'U';
             methodsStr[j++] = ',';
         }
-        if (endpoints[i].callbacks[DELETE] != NULL) {
+        if (endpoints[i]->callbacks[DELETE] != NULL) {
             methodsStr[j++] = 'D';
             methodsStr[j++] = ',';
         }
         methodsStr[--j] = ']';
         methodsStr[++j] = '\0';
 
-        printf("Endpoint(url=%s, methods=%s)%s", endpoints[i].url, methodsStr,
+        printf("Endpoint(url=%s, methods=%s)%s", endpoints[i]->url, methodsStr,
                i == (list->size - 1) ? "" : ", ");
     }
     puts("]");
+}
+
+void destroyEndpointList(EndpointList *list) {
+    if (list->endpoints != NULL) {
+        for (size_t i = 0; i < list->size; i++) {
+            free(list->endpoints[i]->url);
+            free(list->endpoints[i]);
+        }
+        free(list->endpoints);
+    }
+
+    free(list);
 }

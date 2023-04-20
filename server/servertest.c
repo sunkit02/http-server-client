@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <signal.h>
@@ -8,10 +9,11 @@
 
 
 #define LISTENING_PORT 9001
+#define BACK_LOG 10
 
 // Objects created for handleKeyBoardInterrupt() to access
 // in event of user keyboard interuptions
-static Server server;
+static Server *server;
 static int clientSocket;
 
 
@@ -19,12 +21,14 @@ void handleKeyBoardInterrupt(int sig) {
     puts("\nGracefully shutting down server...");
 
     printf("Closing socket on port %d...\n", LISTENING_PORT);
-    shutdown(server.socket, SHUT_RDWR);
-    close(server.socket);
+    shutdown(server->socket, SHUT_RDWR);
+    close(server->socket);
 
     puts("Closing client socket...");
     shutdown(clientSocket, SHUT_RDWR);
     close(clientSocket);
+
+    destroyServer(server);
 
     puts("Successfully shutdown server");
     exit(0);
@@ -67,16 +71,16 @@ void handlePostUser(int clientSocket, HttpRequest *request) {
 // returns true for valid endpoint and false for invalid
 void handleRequest(Server *server, int clientSocket, HttpRequest *request) {
     EndpointList *endpointList = server->endpointList;
-    HttpEndPoint *endpoints = endpointList->endpoints;
+    HttpEndPoint **endpoints = endpointList->endpoints;
 
     for (size_t i = 0; i < endpointList->size; i++) {
         // Check if the endpoint exists for the request
         // 1. Url exists
-        if (strcmp(request->url, endpoints[i].url) == 0) {
+        if (strcmp(request->url, endpoints[i]->url) == 0) {
             // 2. HTTP method is supported
-            if (endpoints[i].callbacks[request->method] != NULL) {
+            if (endpoints[i]->callbacks[request->method] != NULL) {
                 // Invoke callback if endpoints exits
-                endpoints[i].callbacks[request->method](clientSocket, request);
+                endpoints[i]->callbacks[request->method](clientSocket, request);
             } else {
                 handleMethodNotSupported(clientSocket);
             }
@@ -93,14 +97,24 @@ void handleRequest(Server *server, int clientSocket, HttpRequest *request) {
 // i.e. bind to socket, listen to socket, and handle incoming traffic
 void launchServer(Server *server) {
     // Bind to socket
-    bool bindSuccess = bind(server->socket, (struct sockaddr *) &server->address, sizeof(server->address));
-    if (!bindSuccess) {
-        printf("Failed to bind socket to port: %d", server->port);
+    int bindResult = bind(server->socket, (struct sockaddr *) &server->address, sizeof(server->address));
+    if (bindResult == -1) {
+        printf("\n\nFailed to bind socket to port: %d\n", server->port);
+        puts("Aborting...");
+
+        destroyServer(server);
         exit(EXIT_FAILURE);
     }
 
     // Listen to port 
-    listen(server->socket, server->backlog); 
+    int listenResult = listen(server->socket, server->backlog); 
+    if (listenResult == -1) {
+        printf("\n\nFailed to listent to port: %d\n", server->port);
+        puts("Aborting...");
+
+        destroyServer(server);
+        exit(EXIT_FAILURE);
+    }
     printf("Listening on port %d\n", server->port);
 
     // Buffer for storing invoming requests
@@ -108,8 +122,10 @@ void launchServer(Server *server) {
     // Socket for sending responses back to client
     int clientSocket;
 
-    // Continue to listen and handle requests until server stops
-    while (true) {
+    // Listen to hand handle n number of requests
+    int i = 0;
+    int n = 3;
+    while (i < n) {
         // Accept request
         clientSocket = accept(server->socket, NULL, NULL);
         puts("Handling a request...");
@@ -124,10 +140,14 @@ void launchServer(Server *server) {
 
         // Handle the request
         handleRequest(server, clientSocket, request); 
+        // Free memory used by request
+        httpRequestDestroy(request);
 
         // Close clientSocket
         shutdown(clientSocket, SHUT_RDWR);
         close(clientSocket);
+
+        i++;
     }
 }
 
@@ -141,15 +161,13 @@ int main() {
     registerEndpoint(endpointList, "/", GET, handleGetHome);
     registerEndpoint(endpointList, "/data", GET, handleGetData);
     registerEndpoint(endpointList, "/user", POST, handlePostUser);
-    puts("Finished registering endpoints");
+
     printEndpointList(endpointList);
 
     // Create server object
-    server = constructServer(LISTENING_PORT, 10, endpointList, launchServer);
+    server = constructServer(LISTENING_PORT, BACK_LOG, endpointList, launchServer);
 
     // Start server
-    /////////////////////////////////////////////////
-    /// Catch segfault in server.launch(&server); ///
-    /////////////////////////////////////////////////
-    server.launch(&server);
+    server->launch(server);
+    destroyServer(server);
 }

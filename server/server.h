@@ -13,7 +13,7 @@
 
 
 typedef struct {
-    HttpEndPoint *endpoints;
+    HttpEndPoint **endpoints;
     size_t size;
     size_t capacity;
 } EndpointList;
@@ -31,7 +31,9 @@ typedef struct server {
 
 /*############### Function Declarations ##############*/
 
-// Construct endpointlist
+// Construct an endpointlist with capacity of the size parameter.
+// NOTE: EnpointList struct returned by this functon needs to be freed 
+// using the destroyServer function
 EndpointList *constructEndpointList(size_t size);
 // Add endpoint and or method to list
 bool registerEndpoint(EndpointList *list, char *url, HttpMethods httpMethod,
@@ -42,9 +44,20 @@ bool supportsEndpoint(EndpointList *list, char *url, HttpMethods httpMethod);
 void freeEndpoint(EndpointList *list,char *url, HttpMethods httpMethod);
 // Print endpoint list
 void printEndpointList(EndpointList *list);
+// Frees all memory allocated by endpointList
+void destroyEndpointList(EndpointList *list);
 
 // Server construction
-Server constructServer(int port, int backlog, EndpointList *endpointList, 
+// NOTE: Server struct returned needs to be freed using the destroyServer function.
+Server *constructServer(int port, int backlog, EndpointList *endpointList, 
                        void (*launch)(Server *server));
 
+// Responds to a request by serialzing the HttpResponse passed in and
+// send through socket passsed in as clientSocket.
+// NOTE: Does not consume the socket or HttpResponse struct passed in
+void respondToRequest(int clientSocket, HttpResponse *response);
+
+
+// Frees all memory allocated by server
+void destroyServer(Server *server);
 #endif
