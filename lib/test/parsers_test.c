@@ -503,9 +503,9 @@ bool canStringifyHttpResponse() {
 
     char *expectedStringifiedResponse = 
         "HTTP/1.1 200 OK\r\n"
-        "Key1:Value1\r\n"
-        "Key2:Value2\r\n"
-        "Key3:Value3\r\n"
+        "Key1: Value1\r\n"
+        "Key2: Value2\r\n"
+        "Key3: Value3\r\n"
         "\r\n"
         "{\"name\": \"Sun Kit\"}\r\n";
 
