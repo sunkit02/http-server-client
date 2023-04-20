@@ -32,11 +32,11 @@ HttpRequest *constructHttpRequest(HttpMethods method, char *url,
 
             return NULL;
         }
+    } else {
+        request->body = NULL;
     }
 
-    if (headerList != NULL) {
-        request->headerList = headerList;
-    }
+    request->headerList = headerList;
 
     return request;
 }

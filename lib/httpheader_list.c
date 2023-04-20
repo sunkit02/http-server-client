@@ -118,14 +118,15 @@ bool httpHeaderListContainsHeader(HttpHeaderList *list, char *key) {
 
 // Frees all memory used by HttpHeader
 void httpHeaderDestroy(HttpHeader *header) {
-    if (header == NULL) return;
+    if (header != NULL) {
 
-    if (header->key != NULL) 
-        free(header->key);
-    if (header->value != NULL)
-        free(header->value);
+        if (header->key != NULL) 
+            free(header->key);
+        if (header->value != NULL)
+            free(header->value);
 
-    free(header);
+        free(header);
+    }
 }
 
 // Frees all memory used by HttpHeaderList

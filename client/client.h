@@ -28,5 +28,6 @@ typedef struct client {
 
 // Client construction
 Client *constructHttpClient(char *serverIpAddress, int port);
+void destroyHttpClient(Client *client);
 
 #endif

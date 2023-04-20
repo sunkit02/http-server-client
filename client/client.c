@@ -86,10 +86,14 @@ static void stop(Client *client) {
 Client *constructHttpClient(char *serverIpAddress, int port) {
     Client *client = malloc(sizeof(Client));
 
-    client->domain = AF_INET; // DEPRECATED
-    client->service = SOCK_STREAM; // DEPRECATED
-    client->protocol = 0; // DEPRECATED
-    client->serverIpAddress = serverIpAddress;
+    client->domain = AF_INET; // WARN: DEPRECATED
+    client->service = SOCK_STREAM; // WARN: DEPRECATED
+    client->protocol = 0; // WARN: DEPRECATED
+    //
+    client->serverIpAddress = malloc(strlen(serverIpAddress) + 1);
+    if (serverIpAddress == NULL) return NULL;
+    strcpy(client->serverIpAddress, serverIpAddress);
+
     client->port = port;
 
     client->address.sin_family = AF_INET;
@@ -104,4 +108,12 @@ Client *constructHttpClient(char *serverIpAddress, int port) {
     client->stop = stop;
 
     return client;
+}
+
+void destroyHttpClient(Client *client) {
+    if (client != NULL) {
+        free(client->serverIpAddress);
+    }
+
+    free(client);
 }
