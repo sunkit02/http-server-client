@@ -384,7 +384,8 @@ char *stringifyHttpResponse(HttpResponse *response) {
     if (response->headerList != NULL) {
         for (size_t i = 0; i < response->headerList->size; i++) {
             HttpHeader *header = response->headerList->headers[i];
-            sprintf(tempBuffer, "%s:%s\r\n", 
+            // FIX: SIGSEGV here
+            sprintf(tempBuffer, "%s: %s\r\n", 
                     header->key, header->value);
             strcat(responseStr, tempBuffer);
         }
