@@ -1,5 +1,5 @@
-CC=gcc # C compiler
-FLAGS=-g -ggdb
+CC=clang # C compiler
+FLAGS=-g -O0
 
 BUILD_DIR=build
 BUILD_TARGET=simple_server # Name of build executable
@@ -29,7 +29,7 @@ $(TEST_BUILD_DIR)/$(TEST_NAME): servertest.c $(BUILD_DIR)/server.o $(BUILD_DIR)/
 	@$(CC) $(FLAGS) $^ -o $@
 	@echo Compiled tests successfully!
 	@echo Adding link to tests dir in root...
-	@if [ -e $(TEST_BUILD_DIR)/$(TEST_NAME) ]; then ln $@ $(TEST_LINK_DIR); fi
+	@if [ ! -e $(TEST_BUILD_DIR)/$(TEST_NAME) ]; then ln $@ $(TEST_LINK_DIR); fi
 
 .PHONY: create_test_dir
 create_test_dir:
@@ -46,7 +46,7 @@ run: build
 
 
 .PHONY: build_server
-build_server: main.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o $(BUILD_DIR)/httpheader_list.o $(BUILD_DIR)/http_utils.o
+build_server: main.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o $(BUILD_DIR)/httpheader_list.o $(BUILD_DIR)/http_utils.o game.c
 	@echo Compiling and linking server executable...
 	@$(CC) $(FLAGS) $^ -o $(BUILD_DIR)/$(BUILD_TARGET)
 	@echo Built server successfully!
