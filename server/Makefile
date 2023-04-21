@@ -46,7 +46,7 @@ run: build
 
 
 .PHONY: build_server
-build_server: main.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o $(BUILD_DIR)/httpheader_list.o $(BUILD_DIR)/http_utils.o game.c
+build_server: main.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o $(BUILD_DIR)/httpheader_list.o $(BUILD_DIR)/http_utils.o $(BUILD_DIR)/base64.o $(BUILD_DIR)/demo.o
 	@echo Compiling and linking server executable...
 	@$(CC) $(FLAGS) $^ -o $(BUILD_DIR)/$(BUILD_TARGET)
 	@echo Built server successfully!
@@ -54,7 +54,7 @@ build_server: main.c $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/e
 
 
 .PHONY: build_lib
-build_lib: create_build_dir $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o $(BUILD_DIR)/httpheader_list.o $(BUILD_DIR)/http_utils.o
+build_lib: create_build_dir $(BUILD_DIR)/server.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/endpointlist.o $(BUILD_DIR)/httpheader_list.o $(BUILD_DIR)/http_utils.o $(BUILD_DIR)/base64.o $(BUILD_DIR)/demo.o
 	@echo Library built successfully!
 	@echo
 
@@ -77,6 +77,15 @@ $(BUILD_DIR)/endpointlist.o: datastructures/endpointlist.c
 $(BUILD_DIR)/http_utils.o: ../lib/http_utils.c
 	@echo Compiling $@...
 	@$(CC) $(FLAGS) -c $< -o $@ 
+
+$(BUILD_DIR)/base64.o: ../lib/base64.c
+	@echo Compiling $@...
+	@$(CC) $(FLAGS) -c $< -o $@ 
+
+$(BUILD_DIR)/demo.o: demo.c
+	@echo Compiling $@...
+	@$(CC) $(FLAGS) -c $< -o $@ 
+
 
 create_build_dir: 
 	@mkdir -p $(BUILD_DIR)

@@ -4,9 +4,9 @@
 #include "server.h"
 #include "../lib/parsers.h"
 
-Server *constructServer(int port, int backlog, EndpointList *endpointList, 
-                       void (*launch)(Server *server)) {
-    Server *server = malloc(sizeof(Server));
+HttpServer *constructHttpServer(int port, int backlog, EndpointList *endpointList, 
+                       void (*launch)(HttpServer *server)) {
+    HttpServer *server = malloc(sizeof(HttpServer));
 
     server->port = port;
     server->backlog = backlog;
@@ -18,7 +18,7 @@ Server *constructServer(int port, int backlog, EndpointList *endpointList,
 
     server->socket = socket(AF_INET, SOCK_STREAM, 0);
 
-    if (server->socket == 0) {
+    if (server->socket == -1) {
         perror("Failed to connect socket...\n");
         exit(1);
     }
@@ -29,7 +29,7 @@ Server *constructServer(int port, int backlog, EndpointList *endpointList,
     return server;
 }
 
-void destroyServer(Server *server) {
+void destroyHttpServer(HttpServer *server) {
     if (server->endpointList != NULL) {
         destroyEndpointList(server->endpointList);
     }

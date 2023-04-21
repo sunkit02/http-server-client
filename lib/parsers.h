@@ -4,8 +4,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdbool.h>
+
 #include "http.h"
 
+
+void printBytes(const void *obj, size_t size);
 
 // Common string operations
 inline bool startsWith(char *start, char *str) {
@@ -47,6 +50,7 @@ char *stringifyHttpRequest(HttpRequest *request);
 // Returns a stringified representation of an HTTP response.
 // Returns NULL if any essential fields are NULL
 // The returned string needs to be manually freed.
+// TODO: implement resizing when responseStr and tempBuffer run out of space
 char *stringifyHttpResponse(HttpResponse *response);
 
 

@@ -9,12 +9,12 @@
 
 
 // Defined tests
+bool canStringifyHttpRequest();
+bool canStringifyHttpResponse();
 bool canParseHttpResponseWithBody();
 bool canParseHttpResponseWithoutBody();
 bool canParseHttpRequestWithBody();
 bool canParseHttpRequestWithoutBody();
-bool canStringifyHttpRequest();
-bool canStringifyHttpResponse();
 
 
 int main(void) {
@@ -27,15 +27,16 @@ int main(void) {
 }
 
 
-
 bool canParseHttpResponseWithBody() {
     // Given
     const char *const rawResponse = 
         "HTTP/1.1 200 OK\r\n"
         "key1: value1\r\n"
         "key2: value2\r\n"
-        "key3: value3\r\n\r\n"
-        "<h1>This is the body!</h1>\r\n\r\n";
+        "key3: value3\r\n"
+        "\r\n"
+        "<h1>This is the body!</h1>\r\n"
+        "\r\n";
 
     int expectedStatusCode = 200;
     char *expectedStatus = "OK";
@@ -138,7 +139,8 @@ bool canParseHttpResponseWithoutBody() {
         "HTTP/1.1 200 OK\r\n"
         "key1: value1\r\n"
         "key2: value2\r\n"
-        "key3: value3\r\n\r\n";
+        "key3: value3\r\n"
+        "\r\n";
 
     int expectedStatusCode = 200;
     char *expectedStatus = "OK";
@@ -242,7 +244,8 @@ bool canParseHttpRequestWithBody() {
         "key2: value2\r\n"
         "key3: value3\r\n\r\n"
         "{\"name\": \"Eunice\", \"age\": 20}\r\n"
-        "{\"name\": \"Sun Kit\", \"age\": 21}\r\n\r\n";
+        "{\"name\": \"Sun Kit\", \"age\": 21}\r\n"
+        "\r\n";
 
     HttpMethods expectedMethod = POST;
     char *expectedUrl = "/post-data";
@@ -342,7 +345,8 @@ bool canParseHttpRequestWithoutBody() {
         "POST /post-data HTTP/1.1\r\n"
         "key1: value1\r\n"
         "key2: value2\r\n"
-        "key3: value3\r\n\r\n";
+        "key3: value3\r\n"
+        "\r\n";
 
     HttpMethods expectedMethod = POST;
     char *expectedUrl = "/post-data";
@@ -452,7 +456,8 @@ bool canStringifyHttpRequest() {
         "Key2:Value2\r\n"
         "Key3:Value3\r\n"
         "\r\n"
-        "{\"name\": \"Sun Kit\"}\r\n";
+        "{\"name\": \"Sun Kit\"}\r\n"
+        "\r\n";
 
 
     // When
@@ -487,12 +492,6 @@ bool canStringifyHttpResponse() {
     // Given
     // Initialize test request
     HttpHeaderList *headerList = constructHttpHeaderList(5);
-    // HttpResponse response;
-    // response.statusCode = 200;
-    // response.status = "OK";
-    // response.headerList = headerList;
-    // response.body = "{\"name\": \"Sun Kit\"}";
-
     httpHeaderListAdd(headerList, "Key1", "Value1");
     httpHeaderListAdd(headerList, "Key2", "Value2");
     httpHeaderListAdd(headerList, "Key3", "Value3");
@@ -507,7 +506,8 @@ bool canStringifyHttpResponse() {
         "Key2: Value2\r\n"
         "Key3: Value3\r\n"
         "\r\n"
-        "{\"name\": \"Sun Kit\"}\r\n";
+        "{\"name\": \"Sun Kit\"}\r\n"
+        "\r\n";
 
 
     // When

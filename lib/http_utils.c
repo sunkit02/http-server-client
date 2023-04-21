@@ -41,6 +41,7 @@ HttpRequest *constructHttpRequest(HttpMethods method, char *url,
     return request;
 }
 
+
 HttpResponse *constructHttpResponse(int statusCode,
                                     HttpHeaderList *headerList,
                                     char *body) {
@@ -78,6 +79,97 @@ HttpResponse *constructHttpResponse(int statusCode,
     return response;
 }
 
+
+HttpRequest *constructBinaryHttpRequest(HttpMethods method, char *url, HttpHeaderList *headerList,
+                                        char *body, size_t bodySize) {
+    HttpRequest *request = calloc(1, sizeof(HttpRequest));
+    request->method = method;
+    if (url != NULL)  {
+        request->url = malloc(strlen(url) + 1);
+
+        if (request->url != NULL) {
+            strcpy(request->url, url);
+        } else {
+            httpRequestDestroy(request);
+        
+            return NULL;
+        }
+    }
+
+    if (body != NULL)  {
+        request->body = malloc(bodySize);
+
+        if (request->body != NULL) {
+            memcpy(request->body, body, bodySize);
+        } else {
+            httpRequestDestroy(request);
+
+            return NULL;
+        }
+    }
+
+    // Automatically add "Content-Type" and "Content-Length" headers
+    if (headerList == NULL) {
+        headerList = constructHttpHeaderList(1);
+    }
+
+    char lengthBuffer[20];
+    sprintf(lengthBuffer, "%zu", bodySize);
+    httpHeaderListAdd(headerList, "Content-Type", "binary");
+    httpHeaderListAdd(headerList, "Content-Length", lengthBuffer);
+
+    request->headerList = headerList;
+
+    return request;
+}
+
+
+HttpResponse *constructBinaryHttpResponse(int statusCode,
+                                    HttpHeaderList *headerList,
+                                    char *body, size_t bodySize) {
+    HttpResponse *response = calloc(1, sizeof(HttpResponse));
+    response->statusCode = statusCode;
+
+    response->status = calloc(100, sizeof(char));
+    if (response->status == NULL) {
+        perror("Failed to allocated memory for status");
+        httpResponseDestroy(response);
+
+        return NULL;
+    }
+    mapStatusCodeToStatusString(statusCode, response->status);
+    if (strcmp(response->status, "Unknown") == 0) {
+        httpResponseDestroy(response);
+
+        return NULL;
+    }
+
+    if (body != NULL)  {
+        response->body = malloc(bodySize);
+
+        if (response->body != NULL) {
+            memcpy(response->body, body, bodySize);
+        } else {
+            httpResponseDestroy(response);
+
+            return NULL;
+        }
+    }
+
+    // Automatically add "Content-Type" header
+    if (headerList == NULL) {
+        headerList = constructHttpHeaderList(1);
+    }
+
+    char lengthBuffer[20];
+    sprintf(lengthBuffer, "%zu", bodySize);
+    httpHeaderListAdd(headerList, "Content-Type", "binary");
+    httpHeaderListAdd(headerList, "Content-Length", lengthBuffer);
+
+    response->headerList = headerList;
+
+    return response;
+}
 
 void mapStatusCodeToStatusString(int statusCode, char *statusString) {
     switch (statusCode) {

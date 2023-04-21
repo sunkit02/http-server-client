@@ -23,6 +23,7 @@ HttpHeaderList *constructHttpHeaderList(size_t capacity) {
 
 
 // Adds to the end of the HttpHeaderList
+// TODO: Check whether the header exists or not before adding. Replace value if exists and create new if exists
 bool httpHeaderListAdd(HttpHeaderList *list, char *key, char *value) {
     // Resize list when reaching capacity
     if (list->size >= list->capacity) {

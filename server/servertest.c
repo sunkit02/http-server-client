@@ -13,7 +13,7 @@
 
 // Objects created for handleKeyBoardInterrupt() to access
 // in event of user keyboard interuptions
-static Server *server;
+static HttpServer *server;
 static int clientSocket;
 
 
@@ -28,7 +28,7 @@ void handleKeyBoardInterrupt(int sig) {
     shutdown(clientSocket, SHUT_RDWR);
     close(clientSocket);
 
-    destroyServer(server);
+    destroyHttpServer(server);
 
     puts("Successfully shutdown server");
     exit(0);
@@ -69,7 +69,7 @@ void handlePostUser(int clientSocket, HttpRequest *request) {
 
 // Parses url and invokes the callback for the endpoint
 // returns true for valid endpoint and false for invalid
-void handleRequest(Server *server, int clientSocket, HttpRequest *request) {
+void handleHttpRequest(HttpServer *server, int clientSocket, HttpRequest *request) {
     EndpointList *endpointList = server->endpointList;
     HttpEndPoint **endpoints = endpointList->endpoints;
 
@@ -95,14 +95,14 @@ void handleRequest(Server *server, int clientSocket, HttpRequest *request) {
 
 // Function called to start server
 // i.e. bind to socket, listen to socket, and handle incoming traffic
-void launchServer(Server *server) {
+void launchServer(HttpServer *server) {
     // Bind to socket
     int bindResult = bind(server->socket, (struct sockaddr *) &server->address, sizeof(server->address));
     if (bindResult == -1) {
         printf("\n\nFailed to bind socket to port: %d\n", server->port);
         puts("Aborting...");
 
-        destroyServer(server);
+        destroyHttpServer(server);
         exit(EXIT_FAILURE);
     }
 
@@ -112,7 +112,7 @@ void launchServer(Server *server) {
         printf("\n\nFailed to listent to port: %d\n", server->port);
         puts("Aborting...");
 
-        destroyServer(server);
+        destroyHttpServer(server);
         exit(EXIT_FAILURE);
     }
     printf("Listening on port %d\n", server->port);
@@ -139,7 +139,7 @@ void launchServer(Server *server) {
         printf("\nRequest(method=%d, url=%s, body=%s)\n", request->method, request->url, request->body);
 
         // Handle the request
-        handleRequest(server, clientSocket, request); 
+        handleHttpRequest(server, clientSocket, request); 
         // Free memory used by request
         httpRequestDestroy(request);
 
@@ -165,9 +165,9 @@ int main() {
     printEndpointList(endpointList);
 
     // Create server object
-    server = constructServer(LISTENING_PORT, BACK_LOG, endpointList, launchServer);
+    server = constructHttpServer(LISTENING_PORT, BACK_LOG, endpointList, launchServer);
 
     // Start server
     server->launch(server);
-    destroyServer(server);
+    destroyHttpServer(server);
 }

@@ -13,20 +13,26 @@
 
 // Objects created for handleKeyBoardInterrupt() to access
 // in event of user keyboard interuptions
-static Server *server;
+static HttpServer *server;
 static int clientSocket;
 
 // Function defined in game.c to register functions that are
 // created in game.c.
 void registerEndpointsForServer(EndpointList *list);
 
-void respondToRequest(int clientSocket, HttpResponse *response) {
+void respondToHttpRequest(int clientSocket, HttpResponse *response) {
+
     char *responseStr = stringifyHttpResponse(response);
+
+    printf("Response:\n---\n%s\n---\n", responseStr);
+
     if (responseStr == NULL) {
         LOG_ERROR("Failed to stringifyHttpResponse");
         return;
     }
-    send(clientSocket, responseStr, strlen(responseStr), 0);
+
+    send(clientSocket, responseStr, strlen(responseStr) + 1, 0);
+
     free(responseStr);
 }
 
@@ -57,19 +63,19 @@ void handleSigTerm(int sig) {
 
 void handleNotFound(int clientSocket) {
     HttpResponse *response = 
-        constructHttpResponse(404, NULL, "<h1>Page not found</h1>");
-    respondToRequest(clientSocket, response);
+        constructHttpResponse(404, NULL, "<h1>404 Not Found</h1>");
+    respondToHttpRequest(clientSocket, response);
     httpResponseDestroy(response);
 }
 
 void handleMethodNotSupported(int clientSocket) {
-    // NOT supported
+    HttpResponse *response =
+        constructHttpResponse(405, NULL, "<h1>Method Not Allowed</h1>");
+    respondToHttpRequest(clientSocket, response);
+    httpResponseDestroy(response);
 }
 
-// Parses url and invokes the callback for the endpoint
-// returns true for valid endpoint and false for invalid
-void handleRequest(Server *server, int clientSocket, HttpRequest *request) {
-    EndpointList *endpointList = server->endpointList;
+void handleHttpRequest(EndpointList *endpointList, int clientSocket, HttpRequest *request) {
     HttpEndPoint **endpoints = endpointList->endpoints;
 
     for (size_t i = 0; i < endpointList->size; i++) {
@@ -91,7 +97,7 @@ void handleRequest(Server *server, int clientSocket, HttpRequest *request) {
     handleNotFound(clientSocket);
 }
 
-void launchServer(Server *server) {
+void launchServer(HttpServer *server) {
 	// start server
 	int bindSuccess= bind(server->socket, 
                            (struct sockaddr *) &server->address,
@@ -99,17 +105,17 @@ void launchServer(Server *server) {
 
 	if (bindSuccess == -1) {
 		printf("Failed to bind socket to port: %d\n", server->port);
-        destroyServer(server);
+        destroyHttpServer(server);
 		exit(EXIT_FAILURE);
 	}
 
     // listen to port 
     int listenResult = listen(server->socket, server->backlog); 
     if (listenResult == -1) {
-        printf("\n\nFailed to listent to port: %d\n", server->port);
+        printf("\n\nFailed to listen to port: %d\n", server->port);
         puts("Aborting...");
 
-        destroyServer(server);
+        destroyHttpServer(server);
         exit(EXIT_FAILURE);
     }
 
@@ -138,8 +144,7 @@ void launchServer(Server *server) {
         puts("__________END__________\n\n");
 
 		// Invoke callback for request
-		// handleGetHome(clientSocket);
-		handleRequest(server, clientSocket, request); 
+		handleHttpRequest(server->endpointList, clientSocket, request); 
 
 		// Close clientSocket
 		shutdown(clientSocket, SHUT_RDWR);
@@ -158,7 +163,7 @@ int main(void) {
     EndpointList *endpointList = constructEndpointList(10);
     registerEndpointsForServer(endpointList);
 
-    server = constructServer(9001, 10, endpointList, launchServer);
+    server = constructHttpServer(9001, 10, endpointList, launchServer);
 	server->launch(server);
-    destroyServer(server);
+    destroyHttpServer(server);
 }

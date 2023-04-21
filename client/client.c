@@ -7,27 +7,7 @@
 #include "../lib/parsers.h"
 
 
-///////////////////////////// DEPRECATED /////////////////////////////
-// Starts running the client by connecting to the server through 
-// the socket passed in by the Client struct.
-// Returns true if the connection was successfully established
-// and returns false if failed to connect to server
-static bool launch(Client *client) {
-    int connectionFailed = connect(client->socket,
-                                   (struct sockaddr *) &client->address,
-                                   sizeof(client->address));
-    
-    if (connectionFailed) {
-        puts("Failed to connect to socket...");
-        return false;
-    }
-    puts("Connected to socket");
-
-    return true;
-}
-
-
-static bool connectToServer(Client *client) {
+static bool connectToServer(HttpClient *client) {
     // Create socket
     client->socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client->socket == -1) {
@@ -48,21 +28,22 @@ static bool connectToServer(Client *client) {
     return true;
 }
 
-// Sends an HTTP request synchronously and returns an HttpResponse
-// struct that contains the HTTP response from the server
-static HttpResponse *sendRequest(Client *client, HttpRequest *request) {
+// TODO: make it take in address to which to send to and not an HttpClient
+HttpResponse *sendHttpRequest(HttpClient *client, HttpRequest *request) {
     if (!connectToServer(client)) return NULL;
 
     char *requestString = stringifyHttpRequest(request);
 
     char responseBuffer[2048];
     
+    // Send request to server and read response 
     send(client->socket, requestString, strlen(requestString) + 1, 0);
     recv(client->socket, &responseBuffer, sizeof(responseBuffer), 0);
 
     // Close socket after each request
     shutdown(client->socket, SHUT_RDWR);
     close(client->socket);
+
     // Free requestString
     free(requestString);
 
@@ -72,24 +53,13 @@ static HttpResponse *sendRequest(Client *client, HttpRequest *request) {
     return response;
 }
 
-///////////////////////////// DEPRECATED /////////////////////////////
-// Stops the client from running by closing down the socket
-static void stop(Client *client) {
-    puts("Closing client socket...");
-    shutdown(client->socket, SHUT_RDWR);
-    close(client->socket);
-}
-
 
 // Construct an HTTP client capable of both sending requests and
 // receiving responses to an HTTP server
-Client *constructHttpClient(char *serverIpAddress, int port) {
-    Client *client = malloc(sizeof(Client));
+HttpClient *constructHttpClient(char *serverIpAddress, int port) {
+    HttpClient *client = calloc(1, sizeof(HttpClient));
 
-    client->domain = AF_INET; // WARN: DEPRECATED
-    client->service = SOCK_STREAM; // WARN: DEPRECATED
-    client->protocol = 0; // WARN: DEPRECATED
-    //
+    // Create copy for serverIpAddress
     client->serverIpAddress = malloc(strlen(serverIpAddress) + 1);
     if (serverIpAddress == NULL) return NULL;
     strcpy(client->serverIpAddress, serverIpAddress);
@@ -100,17 +70,10 @@ Client *constructHttpClient(char *serverIpAddress, int port) {
     client->address.sin_port = htons(port);
     client->address.sin_addr.s_addr = inet_addr(serverIpAddress);
 
-    client->sendRequest = sendRequest;
-
-    // DEPRECATED
-    client->launch = launch;
-    // DEPRECATED
-    client->stop = stop;
-
     return client;
 }
 
-void destroyHttpClient(Client *client) {
+void destroyHttpClient(HttpClient *client) {
     if (client != NULL) {
         free(client->serverIpAddress);
     }

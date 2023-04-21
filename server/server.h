@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 #include "../lib/http.h"
-
+#include "../lib/parsers.h"
 
 typedef struct {
     HttpEndPoint **endpoints;
@@ -19,14 +19,14 @@ typedef struct {
 } EndpointList;
 
 
-typedef struct server {
+typedef struct HttpServer {
     int port;
     int backlog;
     struct sockaddr_in address;
     int socket;
     EndpointList *endpointList;
-    void (*launch)(struct server *server);
-} Server;
+    void (*launch)(struct HttpServer *server);
+} HttpServer;
 
 
 /*############### Function Declarations ##############*/
@@ -49,15 +49,15 @@ void destroyEndpointList(EndpointList *list);
 
 // Server construction
 // NOTE: Server struct returned needs to be freed using the destroyServer function.
-Server *constructServer(int port, int backlog, EndpointList *endpointList, 
-                       void (*launch)(Server *server));
+HttpServer *constructHttpServer(int port, int backlog, EndpointList *endpointList, 
+                       void (*launch)(HttpServer *server));
 
 // Responds to a request by serialzing the HttpResponse passed in and
 // send through socket passsed in as clientSocket.
 // NOTE: Does not consume the socket or HttpResponse struct passed in
-void respondToRequest(int clientSocket, HttpResponse *response);
+void respondToHttpRequest(int clientSocket, HttpResponse *response);
 
 
 // Frees all memory allocated by server
-void destroyServer(Server *server);
+void destroyHttpServer(HttpServer *server);
 #endif

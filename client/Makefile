@@ -38,13 +38,13 @@ build_test: client_test.c $(BUILD_DIR)/client.o $(BUILD_DIR)/parsers.o $(BUILD_D
 
 
 .PHONY: build-client
-build-client: main.c $(BUILD_DIR)/client.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/httpheader_list.o $(BUILD_DIR)/http_utils.o
+build-client: main.c $(BUILD_DIR)/client.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/httpheader_list.o $(BUILD_DIR)/http_utils.o $(BUILD_DIR)/base64.o
 	@echo Compiling and linking client executable...
 	@$(CC) $(FLAGS) $^ -o $(BUILD_DIR)/$(BUILD_TARGET)
 	@echo Built client successfully!
 
 .PHONY: build_lib
-build_lib: create_build_dir $(BUILD_DIR)/client.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/httpheader_list.o $(BUILD_DIR)/http_utils.o
+build_lib: create_build_dir $(BUILD_DIR)/client.o $(BUILD_DIR)/parsers.o $(BUILD_DIR)/httpheader_list.o $(BUILD_DIR)/http_utils.o $(BUILD_DIR)/base64.o
 	@echo Library built successfully!
 	 
 $(BUILD_DIR)/client.o: client.c
@@ -60,6 +60,10 @@ $(BUILD_DIR)/http_utils.o: ../lib/http_utils.c
 	@$(CC) $(FLAGS) -c $< -o $@ 
 
 $(BUILD_DIR)/parsers.o: ../lib/parsers.c 
+	@echo Compiling $@...
+	@$(CC) $(FLAGS) -c $< -o $@ 
+
+$(BUILD_DIR)/base64.o: ../lib/base64.c 
 	@echo Compiling $@...
 	@$(CC) $(FLAGS) -c $< -o $@ 
 

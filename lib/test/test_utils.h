@@ -22,4 +22,3 @@ void runTest(char* testName, bool (*testFunction)());
 
 #endif // !TEST_UTILS_H
 #define TEST_UTILS_H
-
