@@ -350,9 +350,9 @@ char *stringifyHttpRequest(HttpRequest *request) {
                     header->key, header->value);
             strcat(requestStr, tempBuffer);
         }
-        // End of headers
-        strcat(requestStr, "\r\n");
     }
+    // End of headers
+    strcat(requestStr, "\r\n");
 
     // Body
     if (request->body != NULL) {

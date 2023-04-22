@@ -114,6 +114,5 @@ void destroyHttpClient(Client *client) {
     if (client != NULL) {
         free(client->serverIpAddress);
     }
-
     free(client);
 }
