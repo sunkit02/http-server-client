@@ -49,7 +49,7 @@ char* resetHand(char* playerHand);
 GameData playDealer(GameData currentState);
 
 bool clientPrompt();
-GameData serverPrompt(int playerId, GameData currentState;
+GameData serverPrompt(int playerId, GameData currentState);
 GameData prompt(int playerId, GameData currentState);
 
 void runClinetBlackJack();
