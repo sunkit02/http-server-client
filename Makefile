@@ -1,5 +1,5 @@
-CC=gcc # C compiler
-FLAGS=-g -ggdb
+CC=clang # C compiler
+FLAGS=-g -O0
 
 LIB_TEST_BUILD_DIR=lib/test/build
 TEST_LINK_DIR=tests
