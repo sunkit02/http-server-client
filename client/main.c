@@ -5,143 +5,11 @@
 #include <string.h>
 
 
-#include "../lib/game.h"
 #include "../lib/base64.h"
+#include "../lib/blackJack.h"
 
 #define DEFAULT_PORT 9001
 #define LOCALHOST "127.0.0.1"
-
-
-void getHomePage(HttpClient *client) {
-
-    HttpRequest *request = constructHttpRequest(GET, "/", NULL, NULL);
-
-    HttpResponse *response = sendHttpRequest(client, request);
-
-    if (response == NULL) {
-        puts("Failed to send request");
-        return;
-    }
-
-    printf("%s\n", response->body);
-
-    httpRequestDestroy(request);
-    httpResponseDestroy(response);
-}
-
-void resetHomePageCount(HttpClient *client) {
-
-    HttpRequest *request = constructHttpRequest(GET, "/reset", NULL, NULL);
-
-    HttpResponse *response = sendHttpRequest(client, request);
-
-    if (response == NULL) {
-        puts("Failed to send request");
-        return;
-    }
-
-    printf("%s\n", response->body);
-
-    httpRequestDestroy(request);
-    httpResponseDestroy(response);
-}
-
-void sendPlayer(HttpClient *client) {
-
-    int id = 0;
-    int hit = 0;
-
-    printf("\nEnter id and hit: ");
-    scanf("%d %d", &id, &hit);
-    getchar(); // clear '\n' from stdin
-
-    Player player = { id, hit };
-
-    char buffer[1024];
-    sprintf(buffer, "Player(id=%d, hit=%s)", 
-            player.id, player.hit == true ? "true" : "false");
-    printf("\nYou Entered:\n%s\n", buffer);
-
-    size_t objSize = sizeof(Player);
-
-    char *encodedBody =
-        base64_encode((unsigned char *)&player, objSize, &objSize);
-
-    HttpRequest *request =
-        constructHttpRequest(POST, "/player", NULL, encodedBody);
-
-    HttpResponse *response = sendHttpRequest(client, request);
-
-    if (response == NULL) {
-        puts("Failed to send request");
-        return;
-    }
-
-    objSize = strlen(response->body);
-
-    Player *decodedPlayer = base64_decode(response->body, objSize, &objSize);
-
-    sprintf(buffer, "Player(id=%d, hit=%s)", 
-            decodedPlayer->id,
-            decodedPlayer->hit == true ? "true" : "false");
-    printf("\nServer Response:\n%s\n", buffer);
-
-    httpRequestDestroy(request);
-    httpResponseDestroy(response);
-}
-
-void addPlayer(HttpClient *client) {
-
-    int id = 0;
-    int hit = 0;
-
-    printf("\nEnter id and hit: ");
-    scanf("%d %d", &id, &hit);
-    getchar(); // clear '\n' from stdin
-
-    Player player = { id, hit };
-
-    char buffer[1024];
-    sprintf(buffer, "Player(id=%d, hit=%s)", 
-            player.id, player.hit == true ? "true" : "false");
-    printf("\nYou Entered:\n%s\n", buffer);
-
-    size_t objSize = sizeof(Player);
-
-    char *encodedBody =
-        base64_encode((unsigned char *)&player, objSize, &objSize);
-
-    HttpRequest *request =
-        constructHttpRequest(POST, "/players/add", NULL, encodedBody);
-
-    HttpResponse *response = sendHttpRequest(client, request);
-
-    if (response == NULL) {
-        puts("Failed to send request");
-        return;
-    }
-
-    printf("\nServer Response: %s\n", response->body);
-
-    httpRequestDestroy(request);
-    httpResponseDestroy(response);
-}
-
-void getPlayers(HttpClient *client) {
-    HttpRequest *request = constructHttpRequest(GET, "/players/get", NULL, NULL);
-
-    HttpResponse *response = sendHttpRequest(client, request);
-
-    if (response == NULL) {
-        puts("Failed to send request");
-        return;
-    }
-
-    printf("\nServer Response:\n%s\n", response->body);
-
-    httpRequestDestroy(request);
-    httpResponseDestroy(response);
-}
 
 
 // Assigns server ip address and port number based on command line arguments.
@@ -162,6 +30,11 @@ void assignServerIp(int argc, char *argv[], char **serverIpAddress, int *port) {
         perror("Port number must be greater than 0.");
         exit(EXIT_FAILURE);
     }
+}
+
+void sendPlayer(Player player, int choice){
+    
+
 }
 
 
@@ -195,31 +68,6 @@ int main(int argc, char *argv[]) {
         scanf("%zu", &input);
         getchar();
         puts("");
-
-        switch (input) {
-            case 1:
-                getHomePage(client);
-                break;
-            case 2:
-                resetHomePageCount(client);
-                break;
-            case 3:
-                sendPlayer(client);
-                break;
-            case 4:
-                addPlayer(client);
-                break;
-            case 5:
-                getPlayers(client);
-                break;
-            case 6:
-                puts("Quitting...");
-                run = false;
-                break;
-            default:
-                printf("Input: %zu is not a valid choice. Try again.", input);
-                continue;
-        }
 
         printf("\nPress enter to continue...");
         getchar();
