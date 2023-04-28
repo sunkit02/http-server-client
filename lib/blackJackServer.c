@@ -1,7 +1,9 @@
 #include "../server/server.h"
+#include "blackJack.h"
 #include "blackJackServer.h"
 #include "base64.h"
 #include "http.h"
+#include <stdio.h>
 
 GameData gameData;
 
@@ -139,8 +141,8 @@ void handleJoinGame(int clientSocket, HttpRequest *request) {
 
         if (gameData.playerCount >= MAX_PLAYERS) {
             gameData.currentGameStatus = FULL;
+            puts("players maxed out cannot add more");
         }
-
         size_t inputSize = sizeof(Player);
         char *playerSerialized = base64_encode(&player, inputSize, &inputSize);
 
@@ -166,8 +168,12 @@ void handleStartGame(int clientSocket, HttpRequest *request) {
         // Start game
         initializeGame(gameData);
         response = constructHttpResponse(200, NULL, "Game started");
+        printf("game started\n");
+        gameData.currentGameStatus = PLAYING;
     } else {
         response = constructHttpResponse(400, NULL, "You are not the host");
+        puts(" DEBUGGING MODE GAME STARTS ANYWAYS ");
+        gameData.currentGameStatus = PLAYING;
     }
 
     respondToHttpRequest(clientSocket, response);

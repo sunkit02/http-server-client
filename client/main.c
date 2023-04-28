@@ -45,6 +45,7 @@ bool clientPrompt() {
             return false;
         } else {
             printf("ya silly goose that wasn't an option\n");
+            processing = false;
         }
     } while (processing);
     // FIX: Return something? I'm having it return true for now
@@ -75,7 +76,7 @@ void createNewGame(HttpClient *client) {
     HttpRequest *request = constructHttpRequest(POST, "/create-game", NULL, NULL);
     HttpResponse *response = sendHttpRequest(client, request);
 
-    if( response ){
+    if( response->statusCode == 200 ){
 
         size_t inputSize = sizeof(Player);
         player = base64_decode( response->body, inputSize, &inputSize); 
@@ -94,39 +95,44 @@ void joinGame(HttpClient *client){
     if (player){
         puts("already joined game waiting on host to start");
     }else{
-        HttpRequest *request = constructHttpRequest(POST, "/create-game", NULL, NULL);
+        HttpRequest *request = constructHttpRequest(POST, "/join-game", NULL, NULL);
         HttpResponse *response = sendHttpRequest(client, request);
         if( response ){
             // FIX: Need to check response status code for fail to join
             // like when the game is full. 200=join success, 400=join failed
             // and need to display error message
             // NOTE: The response body contains message from server
-            puts("You have joined the game, waiting on hostr to start");
+            puts("You have joined the game, waiting on host to start");
             size_t inputSize = sizeof(Player);
             player = base64_decode( response->body, inputSize, &inputSize); 
+            printf("You are player %d\n",player->id);
+
         }else{
             puts("failer to recive messgae from server");
         }
     }
 
     // MOVE SOMEWHERE ELSE
-    size_t inputSize = sizeof(Player);
-    char *message = base64_encode(player, inputSize, &inputSize);
-    HttpRequest *request = constructHttpRequest(POST, "/join-game", NULL, message);
-    HttpResponse *response = sendHttpRequest(client, request);
+//    size_t inputSize = sizeof(Player);
+//    char *message = base64_encode(player, inputSize, &inputSize);
+//    HttpRequest *request = constructHttpRequest(POST, "/join-game", NULL, message);
+//    HttpResponse *response = sendHttpRequest(client, request);
 
 }
 
 void startGame(HttpClient *client){
 
-    if ( player->id == 1){
+    printf("player id is : %d\n", player->id);
+    if ( player->id > 0){
         HttpRequest *request = constructHttpRequest(POST, "/start-game", NULL, NULL);
         HttpResponse *response = sendHttpRequest(client, request);
         if (response ){
             printf("%s\n", response->body);
         }else{
-            puts("only the host can start the game");
+            puts("failed to start game");
         }
+    }else{
+        puts("only the host can start the game");
 
     }
 }
@@ -145,7 +151,7 @@ void clientHit(HttpClient *client) {
 
     size_t inputSize = sizeof(Player);
     char *message = base64_encode(player, inputSize, &inputSize);
-    HttpRequest *request = constructHttpRequest(POST, "/join-game", NULL, message);
+    HttpRequest *request = constructHttpRequest(POST, "/hit", NULL, message);
     HttpResponse *response = sendHttpRequest(client, request);
 
     if (response){
@@ -165,6 +171,7 @@ void checkGameStatus(HttpClient *client){
     gameState = base64_decode( response->body, inputSize, &inputSize); 
     player = &(gameState->players[player->id]);
     for (int i = 0; i < gameState->playerCount + 1; i++){
+        printf("cards held %zu", player->handSize);
         printHand(i, *gameState, 0);
         puts("\n");
     }
@@ -180,7 +187,6 @@ void registerClientActions() {
 
 void printPrompt() {
     for (int i = 0; i < clientActionCount - 1; i++) {
-        printf("i=%d\n", i);
         printf("%d. %s\n", i + 1, clientActions[i].description);
     }
 }
@@ -211,7 +217,6 @@ int main(int argc, char *argv[]) {
         scanf("%d", &input);
         getchar();
         puts("");
-        printf("input: %d\n", input);
 
         // validate input before access
         clientActions[input].action(client);
