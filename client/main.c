@@ -78,8 +78,8 @@ void createNewGame(HttpClient *client) {
 
     if( response->statusCode == 200 ){
 
-        size_t inputSize = sizeof(Player);
-        player = base64_decode( response->body, inputSize, &inputSize); 
+        size_t inputSize = strlen(response->body);
+        player = base64_decode(response->body, inputSize, &inputSize); 
 
 
         puts("CREATING NEW GAME");
@@ -103,9 +103,11 @@ void joinGame(HttpClient *client){
             // and need to display error message
             // NOTE: The response body contains message from server
             puts("You have joined the game, waiting on host to start");
-            size_t inputSize = sizeof(Player);
-            player = base64_decode( response->body, inputSize, &inputSize); 
+            size_t inputSize = strlen(response->body);
+            player = base64_decode(response->body, inputSize, &inputSize); 
             printf("You are player %d\n",player->id);
+
+            printf("Response body: %s\n", response->body);
 
         }else{
             puts("failer to recive messgae from server");
@@ -122,9 +124,12 @@ void joinGame(HttpClient *client){
 
 void startGame(HttpClient *client){
 
+    puts("Starting Game");
     printf("player id is : %d\n", player->id);
-    if ( player->id > 0){
-        HttpRequest *request = constructHttpRequest(POST, "/start-game", NULL, NULL);
+    if ( player->id == 1){
+        char buffer[100];
+        sprintf(buffer, "%d", player->id);
+        HttpRequest *request = constructHttpRequest(POST, "/start-game", NULL, buffer);
         HttpResponse *response = sendHttpRequest(client, request);
         if (response ){
             printf("%s\n", response->body);
@@ -155,8 +160,8 @@ void clientHit(HttpClient *client) {
     HttpResponse *response = sendHttpRequest(client, request);
 
     if (response){
-        size_t inputSize = sizeof(GameData);
-        gameState = base64_decode( response->body, inputSize, &inputSize); 
+        size_t inputSize = strlen(response->body);
+        gameState = base64_decode(response->body, inputSize, &inputSize); 
         player = &gameState->players[player->id];
     }else{
         puts("could not get game data from server");
@@ -165,13 +170,14 @@ void clientHit(HttpClient *client) {
 
 void checkGameStatus(HttpClient *client){
 
-    HttpRequest *request = constructHttpRequest(POST, "/game-status", NULL, NULL);
+    HttpRequest *request = constructHttpRequest(GET, "/game-status", NULL, NULL);
     HttpResponse *response = sendHttpRequest(client, request);
-    size_t inputSize = sizeof(GameData);
-    gameState = base64_decode( response->body, inputSize, &inputSize); 
+    size_t inputSize = strlen(response->body);
+    gameState = base64_decode(response->body, inputSize, &inputSize); 
     player = &(gameState->players[player->id]);
+    printf("Player count = %d\n", gameState->playerCount);
     for (int i = 0; i < gameState->playerCount + 1; i++){
-        printf("cards held %zu", player->handSize);
+        printf("Player %d holds %zu cards\n", i + 1, gameState->players[i + 1].handSize);
         printHand(i, *gameState, 0);
         puts("\n");
     }

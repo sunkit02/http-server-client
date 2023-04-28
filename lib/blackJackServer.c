@@ -3,7 +3,9 @@
 #include "blackJackServer.h"
 #include "base64.h"
 #include "http.h"
+#include <stddef.h>
 #include <stdio.h>
+#include <string.h>
 
 GameData gameData;
 
@@ -35,13 +37,11 @@ GameData initializeGame(GameData gameState) {
     shuffle(gameState.deck);
     gameState.deckCounter = 0;
 
-    // server determines numer of players
-    gameState.playerCount = 0;
 
     // intialize players
     for (int i = 0; i < gameState.playerCount + 1; i++){
-        hit(i, gameState);
-        hit(i, gameState);
+        gameState = hit(i, gameState);
+        gameState = hit(i, gameState);
     }
 
     gameState.players[0].playing = false; // makes the game work
@@ -132,7 +132,7 @@ void handleJoinGame(int clientSocket, HttpRequest *request) {
 
     if (gameData.currentGameStatus == WAITING) {
         Player player;
-        player.id = gameData.playerCount;
+        player.id = gameData.playerCount + 1;
         player.handSize = 0;
         player.playing = true;
 
@@ -148,9 +148,16 @@ void handleJoinGame(int clientSocket, HttpRequest *request) {
 
         response = constructHttpResponse(200, NULL, playerSerialized);
 
+        size_t inputSize2 = strlen(playerSerialized);
+        Player *playerDecoded = base64_decode(playerSerialized,
+                                              inputSize2,
+                                              &inputSize2);
+
+        printf("Decoded playerid = %d\n", playerDecoded->id);
+
         free(playerSerialized);
     } else {
-        response = constructHttpResponse(400, NULL, "Game already full");
+        response = constructHttpResponse(400, NULL, "Game already full or started");
     }
 
     respondToHttpRequest(clientSocket, response);
@@ -165,18 +172,20 @@ void handleStartGame(int clientSocket, HttpRequest *request) {
     int playerId = atoi(request->body);
 
     if (playerId == HOST_PLAYER_ID) {
+        puts("Peekaboo");
         // Start game
-        initializeGame(gameData);
+        gameData = initializeGame(gameData);
+        puts("Peekaboo");
         response = constructHttpResponse(200, NULL, "Game started");
         printf("game started\n");
         gameData.currentGameStatus = PLAYING;
     } else {
         response = constructHttpResponse(400, NULL, "You are not the host");
-        puts(" DEBUGGING MODE GAME STARTS ANYWAYS ");
-        gameData.currentGameStatus = PLAYING;
     }
 
+    puts("Peekaboo");
     respondToHttpRequest(clientSocket, response);
+    puts("Peekaboo");
 
     httpRequestDestroy(request);
     httpResponseDestroy(response);
@@ -229,6 +238,9 @@ void handleHit(int clientSocket, HttpRequest *request) {
 }
 
 void handleCheckGameStatus(int clientSocket, HttpRequest *request) {
+    for (int i = 0; i < gameData.playerCount; i++) {
+        printf("Player %d holds %zu cards\n", i + 1, gameData.players[i + 1].handSize);
+    }
     size_t inputSize = sizeof(GameData);
     char *gameDataEncoded = base64_encode(&gameData, inputSize, &inputSize);
 
