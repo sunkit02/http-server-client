@@ -1,9 +1,7 @@
-#include <stddef.h>
-#include <stdio.h>
-#include <string.h>
 #include "server.h"
 #include "../lib/base64.h"
 #include "../lib/blackJack.h"
+#include "../lib/blackJackServer.h"
 
 // ##################### Register Endpoints ##################### //
 void registerEndpointsForServer(EndpointList *endpoints) {

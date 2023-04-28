@@ -12,7 +12,8 @@
 #define DEFAULT_PORT 9001
 #define LOCALHOST "127.0.0.1"
 
-Player player;
+Player *player;
+GameData *gameState;
 
 
 typedef struct ClientAction {
@@ -20,13 +21,35 @@ typedef struct ClientAction {
     void (*action)(HttpClient *client);
 } ClientAction;
 
+
 ClientAction clientActions[10];
 int clientActionCount = 0;
+
 
 void registerClientAction(char *description, void (*action)(HttpClient *client)) {
     clientActions[clientActionCount++].description = description;
     clientActions[clientActionCount++].action = action;
 }
+
+bool clientPrompt() {
+    char response[20];
+    bool processing;
+    printf("Hit or stand?\n");
+    do {
+        scanf("%s", response);
+        if (strcmp(response, "hit") == 0) {
+            processing = false;
+            return true;
+        } else if (strcmp(response, "stand") == 0) {
+            processing = false;
+            return false;
+        } else {
+            printf("ya silly goose that wasn't an option\n");
+        }
+    } while (processing);
+    // FIX: Return something? I'm having it return true for now
+    return true;
+} // end of prompt
 
 // Assigns server ip address and port number based on command line arguments.
 // @param argc - number of commandline arguments.
@@ -50,13 +73,13 @@ void assignServerIp(int argc, char *argv[], char **serverIpAddress, int *port) {
 
 void createNewGame(HttpClient *client) {
     HttpRequest *request = constructHttpRequest(POST, "/create-game", NULL, NULL);
-    HttpResponse *response = sendHttpRequest(client, &request);
-    
+    HttpResponse *response = sendHttpRequest(client, request);
+
     if( response ){
 
         size_t inputSize = sizeof(Player);
         player = base64_decode( response->body, inputSize, &inputSize); 
-        
+
 
         puts("CREATING NEW GAME");
         puts("you are the host");
@@ -67,13 +90,17 @@ void createNewGame(HttpClient *client) {
 }
 
 void joinGame(HttpClient *client){
-    
+
     if (player){
         puts("already joined game waiting on host to start");
     }else{
         HttpRequest *request = constructHttpRequest(POST, "/create-game", NULL, NULL);
-        HttpResponse *response = sendHttpRequest(client, &request);
+        HttpResponse *response = sendHttpRequest(client, request);
         if( response ){
+            // FIX: Need to check response status code for fail to join
+            // like when the game is full. 200=join success, 400=join failed
+            // and need to display error message
+            // NOTE: The response body contains message from server
             puts("You have joined the game, waiting on hostr to start");
             size_t inputSize = sizeof(Player);
             player = base64_decode( response->body, inputSize, &inputSize); 
@@ -86,67 +113,68 @@ void joinGame(HttpClient *client){
     size_t inputSize = sizeof(Player);
     char *message = base64_encode(player, inputSize, &inputSize);
     HttpRequest *request = constructHttpRequest(POST, "/join-game", NULL, message);
-    HttpResponse *response = sendHttpRequest(client, &request);
+    HttpResponse *response = sendHttpRequest(client, request);
 
 }
 
 void startGame(HttpClient *client){
 
-    if ( player.id == 1){
+    if ( player->id == 1){
         HttpRequest *request = constructHttpRequest(POST, "/start-game", NULL, NULL);
-        HttpResponse *response = sendHttpRequest(client, &request);
+        HttpResponse *response = sendHttpRequest(client, request);
         if (response ){
             printf("%s\n", response->body);
-    }else{
-        puts("only the host can start the game");
-    }
+        }else{
+            puts("only the host can start the game");
+        }
 
+    }
 }
 
-void hit(HttpClient *client{
-    
-    if (clientPompt();){
-        player.hit = true;
-        player.playing = true;
+void clientHit(HttpClient *client) {
+
+    // FIX: What does clientPrompt do and where is it defined?
+    // It is currently not defined
+    if (clientPrompt()){
+        player->hit = true;
+        player->playing = true;
     }else{
-        player.hit = false;
-        player.playing = false;
+        player->hit = false;
+        player->playing = false;
     }
 
     size_t inputSize = sizeof(Player);
     char *message = base64_encode(player, inputSize, &inputSize);
     HttpRequest *request = constructHttpRequest(POST, "/join-game", NULL, message);
-    HttpResponse *response = sendHttpRequest(client, &request);
+    HttpResponse *response = sendHttpRequest(client, request);
 
     if (response){
         size_t inputSize = sizeof(GameData);
-        GameData gameState = base64_decode( response->body, inputSize, &inputSize); 
-        player = gameState.players[player.id];
+        gameState = base64_decode( response->body, inputSize, &inputSize); 
+        player = &gameState->players[player->id];
     }else{
-    puts("could not get game data from server");
+        puts("could not get game data from server");
     }
 }
 
 void checkGameStatus(HttpClient *client){
-    
+
     HttpRequest *request = constructHttpRequest(POST, "/game-status", NULL, NULL);
-    HttpResponse *response = sendHttpRequest(client, &request);
+    HttpResponse *response = sendHttpRequest(client, request);
     size_t inputSize = sizeof(GameData);
-    GameData gameState = base64_decode( response->body, inputSize, &inputSize); 
-    player = gameState.players[player.id];
-    for (int i = 0; i < gameState.playerCount + 1; i++){
-        printHand(i,gameState,0);
+    gameState = base64_decode( response->body, inputSize, &inputSize); 
+    player = &(gameState->players[player->id]);
+    for (int i = 0; i < gameState->playerCount + 1; i++){
+        printHand(i, *gameState, 0);
         puts("\n");
-        }
-
-
+    }
 }
 
 void registerClientActions() {
     registerClientAction("Create new game", createNewGame);
     registerClientAction("Join Game", joinGame);
     registerClientAction("Start Game", startGame);
-    registerClientAction("Take a Turn", hit);
+    registerClientAction("Take a Turn", clientHit);
     registerClientAction("Check Game Status", checkGameStatus);
 }
 

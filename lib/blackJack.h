@@ -8,7 +8,6 @@
 #include <time.h>
 #include <stdbool.h>
 
-#include "../lib/http.h"
 
 #define DECK_SIZE 52
 #define HAND_SIZE 11
@@ -56,7 +55,6 @@ typedef struct GameData {
 GameData initializePlayers(GameData gameState);
 
 void shuffle(Card *unshuffledDeck);
-// void ready_play_deck(Card *shuffledDeck);
 
 void printHand(int playerId, GameData currentState, int choice);
 GameData hit(int playerId, GameData currentState);
@@ -80,18 +78,8 @@ void addToCardArray(CardArrayWrapper *arrayWrapper, Card card);
 // Clears all the cards stored and resets the arrayWrapper
 void clearCardsInHand(CardArrayWrapper *arrayWrapper);
 
-//void cardAssign(Card *card, char face, char suit);
 void displayCardLine(Card handToRead[], int handToReadLength, int currentLine);
-//void displayCards(Card handToRead[], size_t handToReadLength);
 void displayCards(CardArrayWrapper hand);
 
 void convertAndPrint(Card *hand, size_t length);
-
-// ####### SERVER FUNTIONS ######## //
-void handleCreateGame(int clientSocket, HttpRequest *request);
-void handleJoinGame(int clientSocket, HttpRequest *request);
-void handleStartGame(int clientSocket, HttpRequest *request);
-void handleHit(int clientSocket, HttpRequest *request);
-void handleCheckGameStatus(int clientSocket, HttpRequest *request);
-
 #endif
