@@ -1,4 +1,5 @@
 #include "client.h"
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -11,6 +12,21 @@
 #define DEFAULT_PORT 9001
 #define LOCALHOST "127.0.0.1"
 
+Player player;
+
+
+typedef struct ClientAction {
+    char *description;
+    void (*action)(HttpClient *client);
+} ClientAction;
+
+ClientAction clientActions[10];
+int clientActionCount = 0;
+
+void registerClientAction(char *description, void (*action)(HttpClient *client)) {
+    clientActions[clientActionCount++].description = description;
+    clientActions[clientActionCount++].action = action;
+}
 
 // Assigns server ip address and port number based on command line arguments.
 // @param argc - number of commandline arguments.
@@ -32,9 +48,113 @@ void assignServerIp(int argc, char *argv[], char **serverIpAddress, int *port) {
     }
 }
 
-void sendPlayer(Player player, int choice){
+void createNewGame(HttpClient *client) {
+    HttpRequest *request = constructHttpRequest(POST, "/create-game", NULL, NULL);
+    HttpResponse *response = sendHttpRequest(client, &request);
     
+    if( response ){
 
+        size_t inputSize = sizeof(Player);
+        player = base64_decode( response->body, inputSize, &inputSize); 
+        
+
+        puts("CREATING NEW GAME");
+        puts("you are the host");
+
+    }else{
+        puts("game already created, join game instead");
+    }
+}
+
+void joinGame(HttpClient *client){
+    
+    if (player){
+        puts("already joined game waiting on host to start");
+    }else{
+        HttpRequest *request = constructHttpRequest(POST, "/create-game", NULL, NULL);
+        HttpResponse *response = sendHttpRequest(client, &request);
+        if( response ){
+            puts("You have joined the game, waiting on hostr to start");
+            size_t inputSize = sizeof(Player);
+            player = base64_decode( response->body, inputSize, &inputSize); 
+        }else{
+            puts("failer to recive messgae from server");
+        }
+    }
+
+    // MOVE SOMEWHERE ELSE
+    size_t inputSize = sizeof(Player);
+    char *message = base64_encode(player, inputSize, &inputSize);
+    HttpRequest *request = constructHttpRequest(POST, "/join-game", NULL, message);
+    HttpResponse *response = sendHttpRequest(client, &request);
+
+}
+
+void startGame(HttpClient *client){
+
+    if ( player.id == 1){
+        HttpRequest *request = constructHttpRequest(POST, "/start-game", NULL, NULL);
+        HttpResponse *response = sendHttpRequest(client, &request);
+        if (response ){
+            printf("%s\n", response->body);
+    }else{
+        puts("only the host can start the game");
+    }
+
+}
+
+void hit(HttpClient *client{
+    
+    if (clientPompt();){
+        player.hit = true;
+        player.playing = true;
+    }else{
+        player.hit = false;
+        player.playing = false;
+    }
+
+    size_t inputSize = sizeof(Player);
+    char *message = base64_encode(player, inputSize, &inputSize);
+    HttpRequest *request = constructHttpRequest(POST, "/join-game", NULL, message);
+    HttpResponse *response = sendHttpRequest(client, &request);
+
+    if (response){
+        size_t inputSize = sizeof(GameData);
+        GameData gameState = base64_decode( response->body, inputSize, &inputSize); 
+        player = gameState.players[player.id];
+    }else{
+    puts("could not get game data from server");
+    }
+}
+
+void checkGameStatus(HttpClient *client){
+    
+    HttpRequest *request = constructHttpRequest(POST, "/game-status", NULL, NULL);
+    HttpResponse *response = sendHttpRequest(client, &request);
+    size_t inputSize = sizeof(GameData);
+    GameData gameState = base64_decode( response->body, inputSize, &inputSize); 
+    player = gameState.players[player.id];
+    for (int i = 0; i < gameState.playerCount + 1; i++){
+        printHand(i,gameState,0);
+        puts("\n");
+        }
+
+
+}
+
+void registerClientActions() {
+    registerClientAction("Create new game", createNewGame);
+    registerClientAction("Join Game", joinGame);
+    registerClientAction("Start Game", startGame);
+    registerClientAction("Take a Turn", hit);
+    registerClientAction("Check Game Status", checkGameStatus);
+}
+
+void printPrompt() {
+    for (int i = 0; i < clientActionCount - 1; i++) {
+        printf("i=%d\n", i);
+        printf("%d. %s\n", i + 1, clientActions[i].description);
+    }
 }
 
 
@@ -46,6 +166,8 @@ int main(int argc, char *argv[]) {
 
     HttpClient *client = constructHttpClient(serverIpAddress, port);
 
+    registerClientActions();
+
     if (client == NULL) {
         puts("Failed to construct client");
         return 1;
@@ -54,20 +176,17 @@ int main(int argc, char *argv[]) {
     bool run = true;
     while (run) {
 
-        puts("\n\n");
-        puts("Choose an action:\n"
-             "1. GET home page\n"
-             "2. Reset home page count\n"
-             "3. Send player\n"
-             "4. Add player\n"
-             "5. Get players\n"
-             "6. Quit\n");
+        printPrompt();
+        printf("Enter your choice [1-%d]: ", clientActionCount - 1);
 
-        printf("Enter your choice [1-6]: ");
-        size_t input = 0;
-        scanf("%zu", &input);
+        int input = 0;
+        scanf("%d", &input);
         getchar();
         puts("");
+        printf("input: %d\n", input);
+
+        // validate input before access
+        clientActions[input].action(client);
 
         printf("\nPress enter to continue...");
         getchar();

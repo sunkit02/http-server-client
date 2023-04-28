@@ -291,30 +291,23 @@ GameData Prompt(int playerId, GameData currentState) {
     return currentState;
 } // end of prompt
 
-// bool clientPrompt() {
-//     char response[20];
-//     bool processing;
-//     printf("Hit or stand?\n");
-//     do {
-//         scanf("%s", response);
-//         if (strcmp(response, "hit") == 0) {
-//             // ADD SERVER 
-//
-//             // send server "hit == true" 
-//             // get new hand from server
-//             convertAndPrint(newHand, HAND_SIZE);
-//             processing = false;
-//             return true;
-//         } else if (strcmp(response, "stand") == 0) {
-//             // ADD SERVER
-//             // send server "hit == false"
-//             processing = false;
-//             return false;
-//         } else {
-//             printf("ya silly goose that wasn't an option\n");
-//         }
-//     } while (processing);
-// } // end of prompt
+ bool clientPrompt() {
+     char response[20];
+     bool processing;
+     printf("Hit or stand?\n");
+     do {
+         scanf("%s", response);
+         if (strcmp(response, "hit") == 0) {
+             processing = false;
+             return true;
+         } else if (strcmp(response, "stand") == 0) {
+             processing = false;
+             return false;
+         } else {
+             printf("ya silly goose that wasn't an option\n");
+         }
+     } while (processing);
+ } // end of prompt
 
 GameData serverPrompt(int playerId, GameData currentState){
     bool responseHit;
