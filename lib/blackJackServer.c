@@ -33,17 +33,31 @@ GameData initializeGame(GameData gameState) {
     for (int i= 0; i < DECK_SIZE; i++){
         gameState.deck[i] = baseDeck[i];
     }
-
+    puts("before shuffle");
     shuffle(gameState.deck);
     gameState.deckCounter = 0;
 
-
+    for (int i = 0; i < gameState.playerCount + 1; i++){
+        gameState.players[i].handSize = 0;
+        gameState.players[i].handCounter = 0;
+        for (int j = 0; j < HAND_SIZE; j++){
+            gameState.players[i].hand[j].suit = ' ';
+            gameState.players[i].hand[j].face = ' ';
+         }
+    }
+            
+    printf("amount of players == %d\n",gameState.playerCount);
     // intialize players
     for (int i = 0; i < gameState.playerCount + 1; i++){
+        puts("hit");
+        printf("i/Playerid = %d\n",i);
+        printf("player hand counter start for loop = %d\n", gameState.players[i].handCounter);
         gameState = hit(i, gameState);
         gameState = hit(i, gameState);
+        puts("end hit");
+        printf("player hand counter end for loop = %d\n", gameState.players[i].handCounter);
     }
-
+    puts("almost over");
     gameState.players[0].playing = false; // makes the game work
     return gameState;
 }

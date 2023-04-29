@@ -177,7 +177,7 @@ void checkGameStatus(HttpClient *client){
     player = &(gameState->players[player->id]);
     printf("Player count = %d\n", gameState->playerCount);
     for (int i = 0; i < gameState->playerCount + 1; i++){
-        printf("Player %d holds %zu cards\n", i + 1, gameState->players[i + 1].handSize);
+        printf("Player %d holds %zu cards\n", i, gameState->players[i].handSize);
         printHand(i, *gameState, 0);
         puts("\n");
     }

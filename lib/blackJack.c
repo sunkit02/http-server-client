@@ -151,9 +151,13 @@ void displayCards(CardArrayWrapper hand) {
 
 // adds cards from deck to hand
 GameData hit(int playerId, GameData currentState) {
-    currentState.players[playerId].hand[currentState.players[playerId].handCounter++] =
+    printf("hand counter = %d\n",currentState.players[playerId].handCounter);
+    currentState.players[playerId].hand[currentState.players[playerId].handCounter] =
         currentState.deck[currentState.deckCounter++];
 
+    printf("about to update, hand counter = %d\n",currentState.players[playerId].handCounter);
+    currentState.players[playerId].handCounter += 1;
+    printf("updated, hand counter = %d\n",currentState.players[playerId].handCounter);
     currentState.players[playerId].handSize++;
     // for (int i = 0; i <= currentState.deckCounter; i++) {
     //   currentState.deck[i] = currentState.deck[i + 1];
