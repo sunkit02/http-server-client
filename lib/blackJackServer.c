@@ -11,8 +11,11 @@ GameData gameData;
 
 
 GameData serverPrompt(int playerId, GameData currentState){
-    bool responseHit;
-    if (responseHit){
+    printf("false is %d, true is %d\n", false, true);
+    printf("playing = %d\n", currentState.players[playerId].playing);
+    printf("player id = %d\n", playerId);
+    printHand(playerId, currentState, 0);
+    if (currentState.players[playerId].playing){
         currentState = hit(playerId, currentState);
         printHand(currentState.players[playerId].id, currentState, 0);
     } else {
@@ -33,7 +36,6 @@ GameData initializeGame(GameData gameState) {
     for (int i= 0; i < DECK_SIZE; i++){
         gameState.deck[i] = baseDeck[i];
     }
-    puts("before shuffle");
     shuffle(gameState.deck);
     gameState.deckCounter = 0;
 
@@ -46,18 +48,11 @@ GameData initializeGame(GameData gameState) {
          }
     }
             
-    printf("amount of players == %d\n",gameState.playerCount);
     // intialize players
     for (int i = 0; i < gameState.playerCount + 1; i++){
-        puts("hit");
-        printf("i/Playerid = %d\n",i);
-        printf("player hand counter start for loop = %d\n", gameState.players[i].handCounter);
         gameState = hit(i, gameState);
         gameState = hit(i, gameState);
-        puts("end hit");
-        printf("player hand counter end for loop = %d\n", gameState.players[i].handCounter);
     }
-    puts("almost over");
     gameState.players[0].playing = false; // makes the game work
     return gameState;
 }
@@ -75,7 +70,7 @@ void runServerBlackJack() {
 
     for (int x = 0; x < gameData.playerCount; x++) {
         //printf("Player %d\n", gameData.players[x].id);
-        convertAndPrint(gameData.players[x].hand, HAND_SIZE);
+        printHand(x, gameData, 0);
         // printHand(x, gameData, 1);
     }
 
@@ -208,19 +203,34 @@ void handleStartGame(int clientSocket, HttpRequest *request) {
 void handleHit(int clientSocket, HttpRequest *request) {
     HttpResponse *response;
     char * gameStateEncoded = NULL;
+
+    if (gameData.currentPlayerId == 0)gameData.currentPlayerId ++;
+    if (gameData.currentPlayerId > gameData.playerCount) gameData.currentPlayerId = 1;
+    printf("currentPlayerId = %d\n", gameData.currentPlayerId);
+    for (int i = 0; i < gameData.playerCount + 1; i++){
+        if (i == gameData.currentPlayerId && gameData.players[i].playing == false){
+            gameData.currentPlayerId++;
+        }
+    }
+
+    printf("currentPlayerId = %d\n", gameData.currentPlayerId);
     // require hit or not in request body
     if (gameData.currentGameStatus == PLAYING) {
 
         size_t inputSize = strlen(request->body);
         Player *player = base64_decode(request->body, inputSize, &inputSize);
+        gameData.players[player->id] = *player;
+        printf("player playing %d\n", player->playing);
 
         if (gameData.currentPlayerId == player->id) {
 
             gameData = serverPrompt(player->id, gameData);
+            gameData.currentPlayerId++;
 
             size_t inputSize = sizeof(GameData);
             gameStateEncoded =  base64_encode(&gameData, inputSize, &inputSize);
             response = constructHttpResponse(200, NULL, gameStateEncoded);
+
         } else {
             response = constructHttpResponse(400, NULL, "It is not your turn");
         }

@@ -79,7 +79,8 @@ void addToCardArray(CardArrayWrapper *arrayWrapper, Card card);
 void clearCardsInHand(CardArrayWrapper *arrayWrapper);
 
 void displayCardLine(Card handToRead[], int handToReadLength, int currentLine);
-void displayCards(CardArrayWrapper hand);
 
+void displayCards(Card *hand, size_t amountOfCards);
 void convertAndPrint(Card *hand, size_t length);
+
 #endif

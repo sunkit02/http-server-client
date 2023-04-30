@@ -33,8 +33,7 @@ void printHand(int playerId, GameData currentState, int choice) {
     //     printf("\n");
     // }
     
-    convertAndPrint(currentState.players[playerId].hand,
-                    currentState.players[playerId].handSize);
+    displayCards(currentState.players[playerId].hand, currentState.players[playerId].handSize);
 }
 
 //######### Display functions ########//
@@ -63,53 +62,7 @@ void printHand(int playerId, GameData currentState, int choice) {
 // Takes the cards in a player's hand and displays them.
 
 
-CardArrayWrapper constructCardArray(size_t initialCapacity) {
-    CardArrayWrapper arrayWrapper;
-
-    Card *tempPtr = calloc(initialCapacity, sizeof(Card));
-
-    if (tempPtr == NULL) {
-        puts("Failed to allocate memory.");
-        exit(1);
-    }
-
-    arrayWrapper.elementArray = tempPtr;
-    arrayWrapper.capacity = initialCapacity;
-    arrayWrapper.size = 0;
-
-    return arrayWrapper;
-}
-
-void addToCardArray(CardArrayWrapper *arrayWrapper, Card card) {
-    // Determine if size is less than capacity
-    if (arrayWrapper->size >= arrayWrapper->capacity) {
-        // If size is not less than capacity
-        puts("Array is full. This theoretically shouldn't be possible.");
-        exit(1);
-    }
-
-    // Assign the card to index in array
-    arrayWrapper->elementArray[arrayWrapper->size++] = card;
-}
-
-void clearCardsInHand(CardArrayWrapper *arrayWrapper) {
-    arrayWrapper->size = 0;
-}
-
-//TODO: Stack from Brandon
-// Card popCard(CardArrayWrapper *arrayWrapper) {
-//     if (arrayWrapper->size) {}//TODO: make sure the stack isn't empty. If it is, exit program.
-// }
-
-void convertAndPrint(Card *hand, size_t length) {
-    CardArrayWrapper cardArrayWrapper = constructCardArray(length);
-    for (size_t i = 0; i < length; i++) {
-        addToCardArray(&cardArrayWrapper, hand[i]);
-    }
-    displayCards(cardArrayWrapper);
-};
-
-void displayCards(CardArrayWrapper hand) {
+void displayCards(Card hand[], size_t amountOfCards) {
 // void displayCards(Card handToRead[], size_t handToReadLength) {
     Card emptyCard;
     printf("%s", "\n");
@@ -119,17 +72,17 @@ void displayCards(CardArrayWrapper hand) {
     for (int currentLine = 0; currentLine < linesInCard; ++currentLine) {
         printf("%s", "\n");
         //displayCardLine(handToRead, handToReadLength, counter);
-        for (int counter = 0; counter < hand.size; ++counter) {
-            if (hand.elementArray[counter].face != emptyCard.face) {
+        for (int counter = 0; counter < amountOfCards; ++counter) {
+            if (hand[counter].face != emptyCard.face) {
                 switch (currentLine) {
                     case 0:
                         printf(" %s", "._____.");
                         break;
                     case 1:
-                        printf(" %s%c%s", "|  ", hand.elementArray[counter].face, "  |");
+                        printf(" %s%c%s", "|  ", hand[counter].face, "  |");
                         break;
                     case 2:
-                        printf(" %s%c%s", "|  ", hand.elementArray[counter].suit, "  |");
+                        printf(" %s%c%s", "|  ", hand[counter].suit, "  |");
                         break;
                     case 3:
                         printf(" %s", "._____.");
@@ -139,7 +92,7 @@ void displayCards(CardArrayWrapper hand) {
                         break;
                 }   // end switch
             } else {
-                counter = hand.size;
+                counter = amountOfCards;
             }   // end if
         }   // end for
     }
@@ -151,18 +104,16 @@ void displayCards(CardArrayWrapper hand) {
 
 // adds cards from deck to hand
 GameData hit(int playerId, GameData currentState) {
-    printf("hand counter = %d\n",currentState.players[playerId].handCounter);
+    puts("start hit");
     currentState.players[playerId].hand[currentState.players[playerId].handCounter] =
         currentState.deck[currentState.deckCounter++];
 
-    printf("about to update, hand counter = %d\n",currentState.players[playerId].handCounter);
-    currentState.players[playerId].handCounter += 1;
-    printf("updated, hand counter = %d\n",currentState.players[playerId].handCounter);
+    currentState.players[playerId].handCounter++;
     currentState.players[playerId].handSize++;
     // for (int i = 0; i <= currentState.deckCounter; i++) {
     //   currentState.deck[i] = currentState.deck[i + 1];
     // }
-
+    puts("end hit");
     return currentState;
 } // end of hit
 
@@ -241,7 +192,7 @@ GameData playDealer(GameData currentState) {
     int dealerTotal = checkHandTotal(currentState.players[0].hand);
 
     // printHand(0, currentState, 0);
-    convertAndPrint(currentState.players[0].hand, HAND_SIZE);
+    printHand(0, currentState, 0);
     while (dealerTotal < 17 && dealerTotal > !21) {
         currentState = hit(0, currentState); // dealer hits
         dealerTotal = checkHandTotal(currentState.players[0].hand);

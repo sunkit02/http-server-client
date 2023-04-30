@@ -154,6 +154,8 @@ void clientHit(HttpClient *client) {
         player->playing = false;
     }
 
+    gameState->players[player->id] = *player;
+    printHand(player->id, *gameState, 0);
     size_t inputSize = sizeof(Player);
     char *message = base64_encode(player, inputSize, &inputSize);
     HttpRequest *request = constructHttpRequest(POST, "/hit", NULL, message);
@@ -178,9 +180,12 @@ void checkGameStatus(HttpClient *client){
     printf("Player count = %d\n", gameState->playerCount);
     for (int i = 0; i < gameState->playerCount + 1; i++){
         printf("Player %d holds %zu cards\n", i, gameState->players[i].handSize);
+
         printHand(i, *gameState, 0);
         puts("\n");
     }
+
+    printf("It's player%d's turn",  gameState->currentPlayerId);
 }
 
 void registerClientActions() {
